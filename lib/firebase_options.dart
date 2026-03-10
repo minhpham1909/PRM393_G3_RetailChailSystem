@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '468377997271',
     projectId: 'project-prm393',
     authDomain: 'project-prm393.firebaseapp.com',
+    databaseURL: 'https://project-prm393-default-rtdb.firebaseio.com',
     storageBucket: 'project-prm393.firebasestorage.app',
     measurementId: 'G-GTTEHM8CJW',
   );
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:468377997271:android:e90ddeb62223fc54594592',
     messagingSenderId: '468377997271',
     projectId: 'project-prm393',
+    databaseURL: 'https://project-prm393-default-rtdb.firebaseio.com',
     storageBucket: 'project-prm393.firebasestorage.app',
   );
 
@@ -63,6 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:468377997271:ios:10742af049840d19594592',
     messagingSenderId: '468377997271',
     projectId: 'project-prm393',
+    databaseURL: 'https://project-prm393-default-rtdb.firebaseio.com',
     storageBucket: 'project-prm393.firebasestorage.app',
     iosClientId: '468377997271-4qi6glh0103g0la7horfkht2u6cvdken.apps.googleusercontent.com',
     iosBundleId: 'com.example.projectPrm393',
@@ -73,6 +76,7 @@ class DefaultFirebaseOptions {
     appId: '1:468377997271:ios:10742af049840d19594592',
     messagingSenderId: '468377997271',
     projectId: 'project-prm393',
+    databaseURL: 'https://project-prm393-default-rtdb.firebaseio.com',
     storageBucket: 'project-prm393.firebasestorage.app',
     iosClientId: '468377997271-4qi6glh0103g0la7horfkht2u6cvdken.apps.googleusercontent.com',
     iosBundleId: 'com.example.projectPrm393',
@@ -84,6 +88,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '468377997271',
     projectId: 'project-prm393',
     authDomain: 'project-prm393.firebaseapp.com',
+    databaseURL: 'https://project-prm393-default-rtdb.firebaseio.com',
     storageBucket: 'project-prm393.firebasestorage.app',
     measurementId: 'G-1PJKQ6CC43',
   );
