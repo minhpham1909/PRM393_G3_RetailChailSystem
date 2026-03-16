@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-highest": "#e1e3e4",
+              "secondary-container": "#a0f399",
+              "on-error": "#ffffff",
+              "secondary": "#1b6d24",
+              "on-tertiary-fixed-variant": "#773200",
+              "secondary-fixed": "#a3f69c",
+              "surface-container": "#eceeef",
+              "surface": "#f8fafb",
+              "on-tertiary-container": "#ffa777",
+              "on-surface": "#191c1d",
+              "on-secondary-fixed-variant": "#005312",
+              "error": "#ba1a1a",
+              "error-container": "#ffdad6",
+              "secondary-fixed-dim": "#88d982",
+              "inverse-surface": "#2e3132",
+              "surface-bright": "#f8fafb",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#ffb68f",
+              "on-background": "#191c1d",
+              "on-primary-fixed": "#001945",
+              "primary-container": "#0d47a1",
+              "on-primary-container": "#a1bbff",
+              "inverse-on-surface": "#eff1f2",
+              "primary-fixed": "#d9e2ff",
+              "on-tertiary-fixed": "#331200",
+              "on-secondary-fixed": "#002204",
+              "surface-container-low": "#f2f4f5",
+              "on-error-container": "#93000a",
+              "surface-tint": "#2b5bb5",
+              "tertiary-fixed": "#ffdbca",
+              "primary": "#003178",
+              "outline-variant": "#c3c6d4",
+              "primary-fixed-dim": "#b0c6ff",
+              "surface-container-high": "#e6e8e9",
+              "tertiary": "#5b2500",
+              "outline": "#737783",
+              "on-surface-variant": "#434652",
+              "on-primary": "#ffffff",
+              "inverse-primary": "#b0c6ff",
+              "on-secondary": "#ffffff",
+              "surface-variant": "#e1e3e4",
+              "on-primary-fixed-variant": "#00429c",
+              "background": "#f8fafb",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#7f3600",
+              "surface-dim": "#d8dadb",
+              "on-secondary-container": "#217128"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-surface-bright px-5 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+<h1 class="text-xl font-semibold text-on-surface">Store Report</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface">account_circle</span>
+</div>
+</header>
+<main class="px-5 space-y-8 mt-4">
+<!-- Performance Header: Bento Hero Card -->
+<section class="grid grid-cols-1 gap-4">
+<div class="relative overflow-hidden bg-secondary text-on-secondary p-6 rounded-xl shadow-sm">
+<div class="relative z-10 flex flex-col gap-1">
+<span class="text-xs font-bold uppercase tracking-wider opacity-80 font-label">Current Month Sales</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold tracking-tight">$142,500</span>
+<div class="flex items-center text-secondary-container text-sm font-medium">
+<span class="material-symbols-outlined text-xs">arrow_upward</span>
+<span>5.2%</span>
+</div>
+</div>
+<p class="text-sm opacity-70 mt-2">v last month: $135,456</p>
+</div>
+<!-- Abstract Background Pattern -->
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-secondary-container opacity-10 rounded-full" data-alt="Abstract green circular pattern background"></div>
+</div>
+</section>
+<!-- Sales Chart: Weekly Visualization -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant font-label">Weekly Performance</h2>
+<span class="text-xs text-secondary font-semibold">MTD View</span>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl h-48 flex items-end justify-between gap-2">
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Monday" style="height: 60%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Mon</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Tuesday" style="height: 45%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Tue</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Wednesday" style="height: 85%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Wed</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary rounded-t-lg" data-alt="Daily sales bar for Thursday - peak" style="height: 100%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Thu</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Friday" style="height: 70%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Fri</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Saturday" style="height: 30%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Sat</span>
+</div>
+<div class="flex flex-col items-center flex-1 gap-2">
+<div class="w-full bg-secondary-fixed-dim rounded-t-lg" data-alt="Daily sales bar for Sunday" style="height: 20%;"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Sun</span>
+</div>
+</div>
+</section>
+<!-- Category Breakdown: Tonal Layering Cards -->
+<section>
+<h2 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant font-label mb-4">Category Breakdown</h2>
+<div class="bg-surface-container-low rounded-xl p-5 space-y-4">
+<div class="flex items-center gap-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="16" stroke-width="4"></circle>
+<circle class="stroke-secondary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="40 100" stroke-linecap="round" stroke-width="4"></circle>
+<circle class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="30 100" stroke-dashoffset="-40" stroke-linecap="round" stroke-width="4"></circle>
+<circle class="stroke-tertiary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="20 100" stroke-dashoffset="-70" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-[10px] font-bold text-on-surface-variant">DEPT.</span>
+</div>
+</div>
+<div class="flex-1 space-y-2">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-medium">Electronics</span>
+</div>
+<span class="text-on-surface-variant">40%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium">Apparel</span>
+</div>
+<span class="text-on-surface-variant">30%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-medium">Home</span>
+</div>
+<span class="text-on-surface-variant">20%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Selling Products -->
+<section>
+<h2 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant font-label mb-4">Top Selling Products</h2>
+<div class="space-y-3">
+<div class="flex items-center gap-4 p-3 bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<img alt="Pro Wireless Headphones" class="w-12 h-12 rounded-lg object-cover" data-alt="Modern wireless over-ear headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCni4YrrQcyCKnnPzqOWFtoDrs3VUobJFrVz0ueUGW0O-oc3IRBV4GmjtINfu8fXrF_wpqzopJ461GyBryRqLdHUUCa_-kHXk9GfDas63LOZQ5QvuJ3RbvsP4ZW_jsEIk7tZoHL47hgIq2mIDyysdk6BSL0H0KGNUwOv_vtS4sDd63_wgmyLTNsd4Kksvy73_RGgzWZcKBLukgYfYjyNiHQa1uAC-bICknA1HkbOvc8lS9mUnaNGX9Jr2qyjAlx7O5zc6y9qEJnxdc"/>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-on-surface">Pro Wireless Headphones</h4>
+<p class="text-[11px] text-on-surface-variant">142 Units Sold</p>
+</div>
+<span class="text-sm font-bold text-secondary">$21,300</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<img alt="Eco Running Shoes" class="w-12 h-12 rounded-lg object-cover" data-alt="Red athletic running shoes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQcgeJNP6FFoe6pi2mdChqDabQg-Psji8SX94fv3QPhmqaPlR-TEdngzdGTWXrEzLRZnWzkJYK9BE1e-YB4-DYmaCIOTEaSiRiqKSJ0WKEyhkJ--iWwLruaEWOrWRWSUzwhKJSf6WxgDrxyI-gfJfdl0QdTN9tEC_j4567UnkPv_8mqgFJX930fpYmWMX5gE0dTkywMvtohL0HJZ04pNnY-cHx01a_P4N2FoAt6kSRF57e42XQkxrYs1tMEL26lpB45B5hsmw9ldE"/>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-on-surface">Eco Running Shoes</h4>
+<p class="text-[11px] text-on-surface-variant">98 Units Sold</p>
+</div>
+<span class="text-sm font-bold text-secondary">$14,700</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<img alt="Smart Home Hub" class="w-12 h-12 rounded-lg object-cover" data-alt="Minimalist white smart watch gadget" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApL-xtOCzapzKPp_61gjzcgnVDwxqeIDg9s4JyvMZ4ENa3KMbAHNRadlazRcYiDr2fpKKfYZwwWFWAALz1k1n5jeLDEPbv5c9-Lxt1Fn8cRIOEJeOgjE4uYPGR1yX7jT9X7wdYhUCnHgP6qpONRtHqWIT9k3ngbAk94o5AdkRCxCar4jrr0uBuocrpqTwSPPKhRKgUxl-ZFQEUJoQnrUm_AnLNCmhxaoDU0FTn7cyBdoNj_ZPQsSw_EH926m2Zx3FItIYg30n28hE"/>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-on-surface">Smart Home Hub</h4>
+<p class="text-[11px] text-on-surface-variant">85 Units Sold</p>
+</div>
+<span class="text-sm font-bold text-secondary">$12,750</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<img alt="Premium Sunglasses" class="w-12 h-12 rounded-lg object-cover" data-alt="Classic style aviator sunglasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjJ_Qfxuy8GxKp0ape-O9gilGB94taK4i9N2DNUcha2uCM2vbAZ_d-B5_gdhoG1DqZqjyAEV_23QmE7eGyLZGvDg47hXjFyy_JUUauxxtZKJhioyehIe4rdAzBaN1nmjR46jcaYmOhyXFb0GKYWjN15or1HAkiJqoR_3f8VyNElgv6FTB9cCJQdibOEP5O7KZLHu_noarEnqdO0JkI97eXhqsl-hl4ML80EzDngxMqoHji15WIxEx55sju4X921piPeSVPIBJB_fA"/>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-on-surface">Premium Sunglasses</h4>
+<p class="text-[11px] text-on-surface-variant">74 Units Sold</p>
+</div>
+<span class="text-sm font-bold text-secondary">$11,100</span>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+<img alt="Digital Tablet 10" class="w-12 h-12 rounded-lg object-cover" data-alt="Slim modern digital tablet device" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm2-viWIt1m2lDvER_vQ15gGJu7k_HYam-oa-2_bSUAIVoGFGwTpVP_nM5lBMsDV0121ZhZSCXk1bET5wKHeCbu2lA8nVszfVaQPrLSvMVHGa9wF-2y-WWLtJ1s9dgysLYxp4eNm5lMFbN6dE3c-pLkAShn6ErfwffnyWYRCBWMXd9eYZA9VAlaT3leiKLmVSO3yZEyPDJjUJqR6ZuHhwV8bnOWu2W5CTKrC3x63ACy_Ov5ZUTFuNV7yWjKIxMrZGI3-4J4ROWi5w"/>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-on-surface">Digital Tablet 10"</h4>
+<p class="text-[11px] text-on-surface-variant">42 Units Sold</p>
+</div>
+<span class="text-sm font-bold text-secondary">$9,240</span>
+</div>
+</div>
+</section>
+<!-- Export Actions -->
+<section class="flex flex-col gap-3 py-4">
+<button class="w-full bg-secondary text-on-secondary font-semibold py-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+                Export PDF Report
+            </button>
+<button class="w-full bg-surface-container-highest text-on-surface font-semibold py-4 rounded-full flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">csv</span>
+                Download CSV Data
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav border-t border-outline-variant/10 px-6 py-3 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 opacity-60">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium font-label">Dashboard</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-60">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium font-label">Inventory</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-60">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-[10px] font-medium font-label">Team</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assessment</span>
+<span class="text-[10px] font-bold font-label">Reports</span>
+</div>
+</nav>
+</body></html>

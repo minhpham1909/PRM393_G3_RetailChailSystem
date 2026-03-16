@@ -1,0 +1,9 @@
+[
+  { "category_id": "CAT_01", "name": "Beverages",       "description": "Đồ uống: cà phê, trà, nước ép, nước ngọt" },
+  { "category_id": "CAT_02", "name": "Dairy & Eggs",    "description": "Sữa, trứng, phô mai, sữa chua" },
+  { "category_id": "CAT_03", "name": "Bakery",          "description": "Bánh mì, bánh ngọt, bánh quy" },
+  { "category_id": "CAT_04", "name": "Snacks & Candy",  "description": "Bánh snack, kẹo, socola, hạt" },
+  { "category_id": "CAT_05", "name": "Fresh Produce",   "description": "Rau củ, trái cây tươi" },
+  { "category_id": "CAT_06", "name": "Household",       "description": "Đồ gia dụng, giấy vệ sinh, nước rửa" },
+  { "category_id": "CAT_07", "name": "Personal Care",   "description": "Chăm sóc cá nhân: xà phòng, dầu gội, kem đánh răng" }
+]
