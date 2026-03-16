@@ -8,14 +8,16 @@ import 'features/store_manager/inventory/stock_import_request_screen.dart';
 import 'features/store_manager/profile/manager_profile_screen.dart';
 import 'features/store_manager/profile/manager_settings_screen.dart';
 import 'features/store_manager/inventory/recent_requests_screen.dart';
+import 'features/auth/auth_gate.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/forgot_password_screen.dart';
+import 'features/auth/screens/admin_placeholder_screen.dart';
 
 /// Điểm khởi đầu ứng dụng Retail Chain Management System
 /// Khởi tạo Firebase và chạy ứng dụng
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const RCMSApp());
 }
 
@@ -31,21 +33,28 @@ class RCMSApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       // Áp dụng theme M3 Emerald Green
       theme: AppTheme.lightTheme,
-      // Route mặc định: vào màn hình Store Manager
-      // (Sẽ thay đổi thành Login screen khi team auth hoàn thành)
-      initialRoute: AppRoutes.manager,
+      // Route mặc định: AuthGate (tự điều hướng theo session + role)
+      initialRoute: '/',
       // ===== BẢNG ROUTE =====
       // Mỗi actor thêm route của mình tại đây (1 dòng = 1 route)
       routes: {
+        // Root gate
+        '/': (context) => const AuthGate(),
+
+        // ===== Auth routes =====
+        AppRoutes.login: (context) => const LoginScreen(),
+        AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
+
         // ===== Routes Store Manager =====
         AppRoutes.manager: (context) => const ManagerMainScreen(),
         AppRoutes.managerProfile: (context) => const ManagerProfileScreen(),
         AppRoutes.managerSettings: (context) => const ManagerSettingsScreen(),
-        AppRoutes.stockImportRequest: (context) => const StockImportRequestScreen(),
+        AppRoutes.stockImportRequest: (context) =>
+            const StockImportRequestScreen(),
         AppRoutes.recentRequests: (context) => const RecentRequestsScreen(),
 
-        // Route Admin (thêm sau bởi team member khác)
-        // AppRoutes.admin: (_) => const AdminMainScreen(),
+        // ===== Routes Admin =====
+        AppRoutes.admin: (context) => const AdminPlaceholderScreen(),
 
         // Route Staff (thêm sau bởi team member khác)
         // AppRoutes.staff: (_) => const StaffMainScreen(),

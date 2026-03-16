@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/manager_app_bar.dart';
+import '../../../core/services/auth_service.dart';
+import '../../../core/constants/app_routes.dart';
 
 class ManagerProfileScreen extends StatefulWidget {
   const ManagerProfileScreen({super.key});
@@ -13,7 +15,9 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
 
   // Thông tin cá nhân
   final _nameController = TextEditingController(text: 'Tran Van Store Manager');
-  final _emailController = TextEditingController(text: 'manager.store01@rcms.com');
+  final _emailController = TextEditingController(
+    text: 'manager.store01@rcms.com',
+  );
   final _passwordController = TextEditingController();
 
   // Thông tin cửa hàng (chỉ hiển thị)
@@ -23,6 +27,9 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
 
   bool _isSaving = false;
   bool _obscurePassword = true;
+
+  // Auth
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -37,7 +44,7 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
       setState(() => _isSaving = true);
       // Giả lập API call
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,7 +55,6 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
   }
 
   void _logout() {
-    // Implement Logout logic
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -62,10 +68,17 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Chuyển hướng về trang đăng nhập hoặc thoát
+              await _authService.signOut();
+              if (!mounted) return;
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.login,
+                (route) => false,
+              );
             },
             child: const Text('Đăng xuất'),
           ),
@@ -99,7 +112,10 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: colorScheme.primaryContainer,
-                          border: Border.all(color: colorScheme.primary, width: 2),
+                          border: Border.all(
+                            color: colorScheme.primary,
+                            width: 2,
+                          ),
                         ),
                         child: Icon(
                           Icons.person,
@@ -138,9 +154,12 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Họ và tên',
                     prefixIcon: const Icon(Icons.badge_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  validator: (value) => value!.isEmpty ? 'Vui lòng nhập họ tên' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Vui lòng nhập họ tên' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -148,10 +167,13 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value!.isEmpty ? 'Vui lòng nhập email' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Vui lòng nhập email' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -161,10 +183,17 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                     labelText: 'Mật khẩu mới (Để trống nếu không đổi)',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
 
@@ -178,9 +207,15 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                         ? const SizedBox(
                             width: 24,
                             height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
-                        : const Text('LƯU THAY ĐỔI', style: TextStyle(fontWeight: FontWeight.bold)),
+                        : const Text(
+                            'LƯU THAY ĐỔI',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ),
 
@@ -207,11 +242,26 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildInfoRow(context, Icons.storefront, 'Tên chi nhánh', _storeName),
+                      _buildInfoRow(
+                        context,
+                        Icons.storefront,
+                        'Tên chi nhánh',
+                        _storeName,
+                      ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(context, Icons.location_on_outlined, 'Địa chỉ', _storeAddress),
+                      _buildInfoRow(
+                        context,
+                        Icons.location_on_outlined,
+                        'Địa chỉ',
+                        _storeAddress,
+                      ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(context, Icons.phone_outlined, 'Số điện thoại', _storePhone),
+                      _buildInfoRow(
+                        context,
+                        Icons.phone_outlined,
+                        'Số điện thoại',
+                        _storePhone,
+                      ),
                     ],
                   ),
                 ),
@@ -225,10 +275,15 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _logout,
                     icon: const Icon(Icons.logout),
-                    label: const Text('ĐĂNG XUẤT', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'ĐĂNG XUẤT',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colorScheme.error,
-                      side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
+                      side: BorderSide(
+                        color: colorScheme.error.withValues(alpha: 0.5),
+                      ),
                     ),
                   ),
                 ),
@@ -241,7 +296,12 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
