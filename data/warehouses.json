@@ -1,0 +1,55 @@
+[
+  {
+    "warehouse_id": "WH_MASTER_01",
+    "name": "Central Master Warehouse",
+    "address": "Lot A1, VSIP Industrial Park, Binh Duong",
+    "phone": "028-3900-0001",
+    "capacity": 100000,
+    "type": "central",
+    "status": "active",
+    "created_at": "2023-06-01T08:00:00Z",
+    "inventory": [
+      {"product_sku":"SKU-0101","stock":5000,"min_stock":1000},
+      {"product_sku":"SKU-0102","stock":3500,"min_stock":800},
+      {"product_sku":"SKU-0103","stock":4000,"min_stock":1000},
+      {"product_sku":"SKU-0104","stock":1500,"min_stock":500},
+      {"product_sku":"SKU-0105","stock":6000,"min_stock":1500},
+      
+      {"product_sku":"SKU-0201","stock":1200,"min_stock":300},
+      {"product_sku":"SKU-0202","stock":1500,"min_stock":400},
+      {"product_sku":"SKU-0203","stock":800,"min_stock":200},
+      {"product_sku":"SKU-0204","stock":1000,"min_stock":300},
+      {"product_sku":"SKU-0205","stock":1500,"min_stock":400},
+      
+      {"product_sku":"SKU-0301","stock":600,"min_stock":150},
+      {"product_sku":"SKU-0302","stock":800,"min_stock":200},
+      {"product_sku":"SKU-0303","stock":400,"min_stock":100},
+      {"product_sku":"SKU-0304","stock":1200,"min_stock":300},
+      {"product_sku":"SKU-0305","stock":500,"min_stock":150},
+      
+      {"product_sku":"SKU-0401","stock":3000,"min_stock":800},
+      {"product_sku":"SKU-0402","stock":4500,"min_stock":1000},
+      {"product_sku":"SKU-0403","stock":1000,"min_stock":300},
+      {"product_sku":"SKU-0404","stock":2500,"min_stock":600},
+      {"product_sku":"SKU-0405","stock":3200,"min_stock":800},
+      
+      {"product_sku":"SKU-0501","stock":1800,"min_stock":400},
+      {"product_sku":"SKU-0502","stock":1200,"min_stock":300},
+      {"product_sku":"SKU-0503","stock":800,"min_stock":250},
+      {"product_sku":"SKU-0504","stock":2000,"min_stock":500},
+      {"product_sku":"SKU-0505","stock":1000,"min_stock":300},
+      
+      {"product_sku":"SKU-0601","stock":4000,"min_stock":1000},
+      {"product_sku":"SKU-0602","stock":2500,"min_stock":600},
+      {"product_sku":"SKU-0603","stock":1500,"min_stock":400},
+      {"product_sku":"SKU-0604","stock":1800,"min_stock":450},
+      {"product_sku":"SKU-0605","stock":2200,"min_stock":550},
+      
+      {"product_sku":"SKU-0701","stock":2800,"min_stock":700},
+      {"product_sku":"SKU-0702","stock":3500,"min_stock":800},
+      {"product_sku":"SKU-0703","stock":1200,"min_stock":300},
+      {"product_sku":"SKU-0704","stock":1500,"min_stock":400},
+      {"product_sku":"SKU-0705","stock":2000,"min_stock":500}
+    ]
+  }
+]

@@ -1,0 +1,43 @@
+[
+  {"sku":"SKU-0101","name":"Premium Coffee Beans 500g","category":"Beverages","price":159000,"image":"https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=500","stock":120,"status":"active"},
+  {"sku":"SKU-0102","name":"Organic Green Tea 100 bags","category":"Beverages","price":125000,"image":"https://images.unsplash.com/photo-1520616118465-9ba44778e1c6?w=500","stock":85,"status":"active"},
+  {"sku":"SKU-0103","name":"Orange Juice 1L","category":"Beverages","price":45000,"image":"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500","stock":200,"status":"active"},
+  {"sku":"SKU-0104","name":"Coca-Cola 330ml x6","category":"Beverages","price":60000,"image":"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500","stock":15,"status":"active"},
+  {"sku":"SKU-0105","name":"Mineral Water 500ml x12","category":"Beverages","price":48000,"image":"https://images.unsplash.com/photo-1548839140-29a749e1bc4c?w=500","stock":0,"status":"active"},
+
+  {"sku":"SKU-0201","name":"Fresh Milk TH True 1L","category":"Dairy & Eggs","price":32000,"image":"https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500","stock":5,"status":"active"},
+  {"sku":"SKU-0202","name":"Greek Yogurt Vinamilk 4-pack","category":"Dairy & Eggs","price":42000,"image":"https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500","stock":60,"status":"active"},
+  {"sku":"SKU-0203","name":"Mozzarella Cheese 200g","category":"Dairy & Eggs","price":75000,"image":"https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=500","stock":18,"status":"active"},
+  {"sku":"SKU-0204","name":"Organic Eggs 10-pack","category":"Dairy & Eggs","price":55000,"image":"https://images.unsplash.com/photo-1587486913049-53cef8852ab1?w=500","stock":3,"status":"active"},
+  {"sku":"SKU-0205","name":"Butter Anchor 227g","category":"Dairy & Eggs","price":68000,"image":"https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=500","stock":40,"status":"active"},
+
+  {"sku":"SKU-0301","name":"Whole Wheat Bread","category":"Bakery","price":35000,"image":"https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500","stock":0,"status":"active"},
+  {"sku":"SKU-0302","name":"Croissant Butter 4-pack","category":"Bakery","price":65000,"image":"https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500","stock":25,"status":"active"},
+  {"sku":"SKU-0303","name":"Chocolate Cake Slice","category":"Bakery","price":45000,"image":"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500","stock":12,"status":"active"},
+  {"sku":"SKU-0304","name":"Butter Cookies Tin 400g","category":"Bakery","price":120000,"image":"https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500","stock":50,"status":"active"},
+  {"sku":"SKU-0305","name":"Baguette French Style","category":"Bakery","price":22000,"image":"https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=500","stock":8,"status":"active"},
+
+  {"sku":"SKU-0401","name":"Lay's Classic Chips 150g","category":"Snacks & Candy","price":32000,"image":"https://images.unsplash.com/photo-1566478989037-eade1730cf19?w=500","stock":90,"status":"active"},
+  {"sku":"SKU-0402","name":"KitKat 4-Finger Bar","category":"Snacks & Candy","price":18000,"image":"https://images.unsplash.com/photo-1582223069188-7e3aa012fc10?w=500","stock":150,"status":"active"},
+  {"sku":"SKU-0403","name":"Mixed Nuts Premium 300g","category":"Snacks & Candy","price":95000,"image":"https://images.unsplash.com/photo-1536585148003-fbade0650993?w=500","stock":4,"status":"active"},
+  {"sku":"SKU-0404","name":"Oreo Cookies 137g","category":"Snacks & Candy","price":25000,"image":"https://images.unsplash.com/photo-1558961363-a64bf751ec29?w=500","stock":70,"status":"active"},
+  {"sku":"SKU-0405","name":"Pocky Strawberry 45g","category":"Snacks & Candy","price":20000,"image":"https://images.unsplash.com/photo-1558961363-fa15ab32e3d3?w=500","stock":110,"status":"active"},
+
+  {"sku":"SKU-0501","name":"Banana Cavendish 1kg","category":"Fresh Produce","price":28000,"image":"https://images.unsplash.com/photo-1571501679680-de32f1e7aad4?w=500","stock":35,"status":"active"},
+  {"sku":"SKU-0502","name":"Red Apple Fuji 1kg","category":"Fresh Produce","price":65000,"image":"https://images.unsplash.com/photo-1560806887-1e4cd0b6faa6?w=500","stock":20,"status":"active"},
+  {"sku":"SKU-0503","name":"Baby Spinach 200g","category":"Fresh Produce","price":30000,"image":"https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500","stock":0,"status":"active"},
+  {"sku":"SKU-0504","name":"Carrot Organic 500g","category":"Fresh Produce","price":22000,"image":"https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500","stock":45,"status":"active"},
+  {"sku":"SKU-0505","name":"Cherry Tomato 250g","category":"Fresh Produce","price":35000,"image":"https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500","stock":10,"status":"active"},
+
+  {"sku":"SKU-0601","name":"Toilet Paper Ultra 12-rolls","category":"Household","price":85000,"image":"https://images.unsplash.com/photo-1584556812952-905ffd0c611a?w=500","stock":100,"status":"active"},
+  {"sku":"SKU-0602","name":"Dishwashing Liquid Sunlight 750ml","category":"Household","price":38000,"image":"https://images.unsplash.com/photo-1584824486509-664dc175ebd6?w=500","stock":55,"status":"active"},
+  {"sku":"SKU-0603","name":"Trash Bags 50L x30","category":"Household","price":42000,"image":"https://images.unsplash.com/photo-1611284446314-60a58ac53203?w=500","stock":2,"status":"active"},
+  {"sku":"SKU-0604","name":"Glass Cleaner 500ml","category":"Household","price":35000,"image":"https://images.unsplash.com/photo-1585421514738-01798e348b17?w=500","stock":30,"status":"active"},
+  {"sku":"SKU-0605","name":"Laundry Detergent OMO 2.7kg","category":"Household","price":135000,"image":"https://images.unsplash.com/photo-1610555356070-d1fb3424d8fb?w=500","stock":22,"status":"active"},
+
+  {"sku":"SKU-0701","name":"Shampoo Head & Shoulders 340ml","category":"Personal Care","price":78000,"image":"https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500","stock":65,"status":"active"},
+  {"sku":"SKU-0702","name":"Toothpaste Colgate 225g","category":"Personal Care","price":45000,"image":"https://images.unsplash.com/photo-1559598467-f8b76c820065?w=500","stock":80,"status":"active"},
+  {"sku":"SKU-0703","name":"Bar Soap Dove 100g x4","category":"Personal Care","price":55000,"image":"https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=500","stock":0,"status":"active"},
+  {"sku":"SKU-0704","name":"Body Lotion Nivea 400ml","category":"Personal Care","price":95000,"image":"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500","stock":15,"status":"active"},
+  {"sku":"SKU-0705","name":"Deodorant Rexona 150ml","category":"Personal Care","price":62000,"image":"https://images.unsplash.com/photo-1574621100236-d25b1bcbb158?w=500","stock":40,"status":"active"}
+]

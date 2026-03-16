@@ -1,0 +1,150 @@
+[
+  {
+    "request_id": "REQ_001",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "High",
+    "status": "approved",
+    "created_at": "2025-02-20T09:00:00Z",
+    "expected_date": "2025-02-25T09:00:00Z",
+    "approved_at": "2025-02-21T14:00:00Z",
+    "notes": "Urgent replenishment for out-of-stock items",
+    "items": [
+      { "product_sku": "SKU-0105", "product_name": "Mineral Water 500ml x12", "quantity": 50 },
+      { "product_sku": "SKU-0301", "product_name": "Whole Wheat Bread", "quantity": 30 },
+      { "product_sku": "SKU-0503", "product_name": "Baby Spinach 200g", "quantity": 20 }
+    ],
+    "total_items": 3
+  },
+  {
+    "request_id": "REQ_002",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "Normal",
+    "status": "pending",
+    "created_at": "2025-03-10T10:30:00Z",
+    "expected_date": "2025-03-17T09:00:00Z",
+    "approved_at": null,
+    "notes": "Weekly restocking for low-stock dairy products",
+    "items": [
+      { "product_sku": "SKU-0201", "product_name": "Fresh Milk TH True 1L", "quantity": 40 },
+      { "product_sku": "SKU-0204", "product_name": "Organic Eggs 10-pack", "quantity": 25 },
+      { "product_sku": "SKU-0703", "product_name": "Bar Soap Dove 100g x4", "quantity": 30 }
+    ],
+    "total_items": 3
+  },
+  {
+    "request_id": "REQ_003",
+    "store_id": "STORE_002",
+    "manager_id": "MGR_002",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "Normal",
+    "status": "in_transit",
+    "created_at": "2025-03-05T08:15:00Z",
+    "expected_date": "2025-03-12T09:00:00Z",
+    "approved_at": "2025-03-06T11:00:00Z",
+    "notes": "Monthly supply for snacks and household items",
+    "items": [
+      { "product_sku": "SKU-0403", "product_name": "Mixed Nuts Premium 300g", "quantity": 20 },
+      { "product_sku": "SKU-0603", "product_name": "Trash Bags 50L x30", "quantity": 40 },
+      { "product_sku": "SKU-0104", "product_name": "Coca-Cola 330ml x6", "quantity": 60 }
+    ],
+    "total_items": 3
+  },
+  {
+    "request_id": "REQ_004",
+    "store_id": "STORE_003",
+    "manager_id": "MGR_003",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "High",
+    "status": "approved",
+    "created_at": "2025-03-08T07:45:00Z",
+    "expected_date": "2025-03-13T09:00:00Z",
+    "approved_at": "2025-03-09T09:30:00Z",
+    "notes": "Critical stock replenishment before weekend rush",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 30 },
+      { "product_sku": "SKU-0302", "product_name": "Croissant Butter 4-pack", "quantity": 40 },
+      { "product_sku": "SKU-0502", "product_name": "Red Apple Fuji 1kg", "quantity": 25 },
+      { "product_sku": "SKU-0305", "product_name": "Baguette French Style", "quantity": 50 }
+    ],
+    "total_items": 4
+  },
+  {
+    "request_id": "REQ_005",
+    "store_id": "STORE_004",
+    "manager_id": "MGR_004",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "Low",
+    "status": "pending",
+    "created_at": "2025-03-12T11:00:00Z",
+    "expected_date": "2025-03-22T09:00:00Z",
+    "approved_at": null,
+    "notes": "Scheduled supplementary stock for personal care aisle",
+    "items": [
+      { "product_sku": "SKU-0701", "product_name": "Shampoo Head & Shoulders 340ml", "quantity": 20 },
+      { "product_sku": "SKU-0702", "product_name": "Toothpaste Colgate 225g", "quantity": 30 },
+      { "product_sku": "SKU-0704", "product_name": "Body Lotion Nivea 400ml", "quantity": 15 },
+      { "product_sku": "SKU-0705", "product_name": "Deodorant Rexona 150ml", "quantity": 20 }
+    ],
+    "total_items": 4
+  },
+  {
+    "request_id": "REQ_006",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "Normal",
+    "status": "rejected",
+    "created_at": "2025-02-05T09:00:00Z",
+    "expected_date": "2025-02-12T09:00:00Z",
+    "approved_at": null,
+    "rejected_at": "2025-02-06T16:00:00Z",
+    "rejection_reason": "Insufficient warehouse stock for requested items",
+    "notes": "Large order for bakery section",
+    "items": [
+      { "product_sku": "SKU-0302", "product_name": "Croissant Butter 4-pack", "quantity": 200 },
+      { "product_sku": "SKU-0303", "product_name": "Chocolate Cake Slice", "quantity": 150 }
+    ],
+    "total_items": 2
+  },
+  {
+    "request_id": "REQ_007",
+    "store_id": "STORE_002",
+    "manager_id": "MGR_002",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "High",
+    "status": "approved",
+    "created_at": "2025-03-14T08:00:00Z",
+    "expected_date": "2025-03-18T09:00:00Z",
+    "approved_at": "2025-03-14T15:00:00Z",
+    "notes": "Emergency restock - several items out of stock",
+    "items": [
+      { "product_sku": "SKU-0503", "product_name": "Baby Spinach 200g", "quantity": 30 },
+      { "product_sku": "SKU-0301", "product_name": "Whole Wheat Bread", "quantity": 50 },
+      { "product_sku": "SKU-0105", "product_name": "Mineral Water 500ml x12", "quantity": 80 }
+    ],
+    "total_items": 3
+  },
+  {
+    "request_id": "REQ_008",
+    "store_id": "STORE_003",
+    "manager_id": "MGR_003",
+    "source_warehouse": "Central Master Warehouse",
+    "priority": "Normal",
+    "status": "pending",
+    "created_at": "2025-03-15T14:30:00Z",
+    "expected_date": "2025-03-25T09:00:00Z",
+    "approved_at": null,
+    "notes": "Bi-weekly fresh produce order",
+    "items": [
+      { "product_sku": "SKU-0501", "product_name": "Banana Cavendish 1kg", "quantity": 40 },
+      { "product_sku": "SKU-0502", "product_name": "Red Apple Fuji 1kg", "quantity": 35 },
+      { "product_sku": "SKU-0504", "product_name": "Carrot Organic 500g", "quantity": 30 },
+      { "product_sku": "SKU-0505", "product_name": "Cherry Tomato 250g", "quantity": 25 }
+    ],
+    "total_items": 4
+  }
+]

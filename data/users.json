@@ -1,0 +1,86 @@
+{
+  "___comment": "2 actors: admin (4), store_manager (4). Total: 8 users. (Staff have been removed from scope)",
+
+  "users": [
+    {
+      "account_id": "ADM_001",
+      "email": "admin.truong@rcms.vn",
+      "password_hash": "hashed_Admin@123",
+      "full_name": "Truong Minh Quan",
+      "role": "admin",
+      "phone": "0901000001",
+      "store_id": null,
+      "created_at": "2023-06-01T08:00:00Z"
+    },
+    {
+      "account_id": "ADM_002",
+      "email": "admin.linh@rcms.vn",
+      "password_hash": "hashed_Admin@123",
+      "full_name": "Phan Thuy Linh",
+      "role": "admin",
+      "phone": "0901000002",
+      "store_id": null,
+      "created_at": "2023-06-01T08:00:00Z"
+    },
+    {
+      "account_id": "ADM_003",
+      "email": "admin.hieu@rcms.vn",
+      "password_hash": "hashed_Admin@123",
+      "full_name": "Le Trung Hieu",
+      "role": "admin",
+      "phone": "0901000003",
+      "store_id": null,
+      "created_at": "2023-07-10T08:00:00Z"
+    },
+    {
+      "account_id": "ADM_004",
+      "email": "admin.mai@rcms.vn",
+      "password_hash": "hashed_Admin@123",
+      "full_name": "Vo Ngoc Mai",
+      "role": "admin",
+      "phone": "0901000004",
+      "store_id": null,
+      "created_at": "2023-08-20T08:00:00Z"
+    },
+    {
+      "account_id": "MGR_001",
+      "email": "manager.thanh@rcms.vn",
+      "password_hash": "hashed_Manager@123",
+      "full_name": "Nguyen Hoang Thanh",
+      "role": "store_manager",
+      "phone": "0912000001",
+      "store_id": "STORE_001",
+      "created_at": "2024-01-15T08:00:00Z"
+    },
+    {
+      "account_id": "MGR_002",
+      "email": "manager.hoa@rcms.vn",
+      "password_hash": "hashed_Manager@123",
+      "full_name": "Tran Thi Bich Hoa",
+      "role": "store_manager",
+      "phone": "0912000002",
+      "store_id": "STORE_002",
+      "created_at": "2024-02-20T08:00:00Z"
+    },
+    {
+      "account_id": "MGR_003",
+      "email": "manager.duc@rcms.vn",
+      "password_hash": "hashed_Manager@123",
+      "full_name": "Pham Van Duc",
+      "role": "store_manager",
+      "phone": "0912000003",
+      "store_id": "STORE_003",
+      "created_at": "2024-03-10T08:00:00Z"
+    },
+    {
+      "account_id": "MGR_004",
+      "email": "manager.ngoc@rcms.vn",
+      "password_hash": "hashed_Manager@123",
+      "full_name": "Le Thuy Ngoc",
+      "role": "store_manager",
+      "phone": "0912000004",
+      "store_id": "STORE_004",
+      "created_at": "2024-04-05T08:00:00Z"
+    }
+  ]
+}

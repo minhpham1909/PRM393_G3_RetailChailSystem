@@ -1,0 +1,240 @@
+[
+  {
+    "order_id": "ORD_001",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-03-01T09:15:00Z",
+    "payment_method": "Cash",
+    "total_amount": 342000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 1, "unit_price": 159000 },
+      { "product_sku": "SKU-0202", "product_name": "Greek Yogurt Vinamilk 4-pack", "quantity": 2, "unit_price": 42000 },
+      { "product_sku": "SKU-0405", "product_name": "Pocky Strawberry 45g", "quantity": 3, "unit_price": 20000 },
+      { "product_sku": "SKU-0501", "product_name": "Banana Cavendish 1kg", "quantity": 1, "unit_price": 28000 },
+      { "product_sku": "SKU-0702", "product_name": "Toothpaste Colgate 225g", "quantity": 1, "unit_price": 45000 }
+    ]
+  },
+  {
+    "order_id": "ORD_002",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-03-01T11:30:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 460000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0605", "product_name": "Laundry Detergent OMO 2.7kg", "quantity": 2, "unit_price": 135000 },
+      { "product_sku": "SKU-0601", "product_name": "Toilet Paper Ultra 12-rolls", "quantity": 1, "unit_price": 85000 },
+      { "product_sku": "SKU-0701", "product_name": "Shampoo Head & Shoulders 340ml", "quantity": 1, "unit_price": 78000 },
+      { "product_sku": "SKU-0501", "product_name": "Banana Cavendish 1kg", "quantity": 1, "unit_price": 28000 }
+    ]
+  },
+  {
+    "order_id": "ORD_003",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-03-02T10:00:00Z",
+    "payment_method": "Cash",
+    "total_amount": 275000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0302", "product_name": "Croissant Butter 4-pack", "quantity": 2, "unit_price": 65000 },
+      { "product_sku": "SKU-0102", "product_name": "Organic Green Tea 100 bags", "quantity": 1, "unit_price": 125000 },
+      { "product_sku": "SKU-0404", "product_name": "Oreo Cookies 137g", "quantity": 1, "unit_price": 25000 }
+    ]
+  },
+  {
+    "order_id": "ORD_004",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-03-02T14:20:00Z",
+    "payment_method": "Cash",
+    "total_amount": 95000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0103", "product_name": "Orange Juice 1L", "quantity": 1, "unit_price": 45000 },
+      { "product_sku": "SKU-0504", "product_name": "Carrot Organic 500g", "quantity": 1, "unit_price": 22000 },
+      { "product_sku": "SKU-0501", "product_name": "Banana Cavendish 1kg", "quantity": 1, "unit_price": 28000 }
+    ]
+  },
+  {
+    "order_id": "ORD_005",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-03-03T09:45:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 573000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0304", "product_name": "Butter Cookies Tin 400g", "quantity": 2, "unit_price": 120000 },
+      { "product_sku": "SKU-0403", "product_name": "Mixed Nuts Premium 300g", "quantity": 1, "unit_price": 95000 },
+      { "product_sku": "SKU-0704", "product_name": "Body Lotion Nivea 400ml", "quantity": 1, "unit_price": 95000 },
+      { "product_sku": "SKU-0602", "product_name": "Dishwashing Liquid Sunlight 750ml", "quantity": 1, "unit_price": 38000 },
+      { "product_sku": "SKU-0605", "product_name": "Laundry Detergent OMO 2.7kg", "quantity": 1, "unit_price": 135000 }
+    ]
+  },
+  {
+    "order_id": "ORD_006",
+    "store_id": "STORE_002",
+    "manager_id": "MGR_002",
+    "order_date": "2025-03-01T08:30:00Z",
+    "payment_method": "Cash",
+    "total_amount": 185000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0201", "product_name": "Fresh Milk TH True 1L", "quantity": 2, "unit_price": 32000 },
+      { "product_sku": "SKU-0301", "product_name": "Whole Wheat Bread", "quantity": 1, "unit_price": 35000 },
+      { "product_sku": "SKU-0401", "product_name": "Lay's Classic Chips 150g", "quantity": 1, "unit_price": 32000 },
+      { "product_sku": "SKU-0103", "product_name": "Orange Juice 1L", "quantity": 1, "unit_price": 45000 },
+      { "product_sku": "SKU-0505", "product_name": "Cherry Tomato 250g", "quantity": 1, "unit_price": 35000 }
+    ]
+  },
+  {
+    "order_id": "ORD_007",
+    "store_id": "STORE_002",
+    "manager_id": "MGR_002",
+    "order_date": "2025-03-02T16:00:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 395000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 1, "unit_price": 159000 },
+      { "product_sku": "SKU-0203", "product_name": "Mozzarella Cheese 200g", "quantity": 1, "unit_price": 75000 },
+      { "product_sku": "SKU-0705", "product_name": "Deodorant Rexona 150ml", "quantity": 1, "unit_price": 62000 },
+      { "product_sku": "SKU-0403", "product_name": "Mixed Nuts Premium 300g", "quantity": 1, "unit_price": 95000 }
+    ]
+  },
+  {
+    "order_id": "ORD_008",
+    "store_id": "STORE_003",
+    "manager_id": "MGR_003",
+    "order_date": "2025-03-01T10:15:00Z",
+    "payment_method": "Cash",
+    "total_amount": 246000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0102", "product_name": "Organic Green Tea 100 bags", "quantity": 1, "unit_price": 125000 },
+      { "product_sku": "SKU-0302", "product_name": "Croissant Butter 4-pack", "quantity": 1, "unit_price": 65000 },
+      { "product_sku": "SKU-0204", "product_name": "Organic Eggs 10-pack", "quantity": 1, "unit_price": 55000 }
+    ]
+  },
+  {
+    "order_id": "ORD_009",
+    "store_id": "STORE_003",
+    "manager_id": "MGR_003",
+    "order_date": "2025-03-03T13:10:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 316000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0601", "product_name": "Toilet Paper Ultra 12-rolls", "quantity": 1, "unit_price": 85000 },
+      { "product_sku": "SKU-0602", "product_name": "Dishwashing Liquid Sunlight 750ml", "quantity": 1, "unit_price": 38000 },
+      { "product_sku": "SKU-0604", "product_name": "Glass Cleaner 500ml", "quantity": 1, "unit_price": 35000 },
+      { "product_sku": "SKU-0701", "product_name": "Shampoo Head & Shoulders 340ml", "quantity": 1, "unit_price": 78000 },
+      { "product_sku": "SKU-0702", "product_name": "Toothpaste Colgate 225g", "quantity": 1, "unit_price": 45000 },
+      { "product_sku": "SKU-0305", "product_name": "Baguette French Style", "quantity": 1, "unit_price": 22000 }
+    ]
+  },
+  {
+    "order_id": "ORD_010",
+    "store_id": "STORE_004",
+    "manager_id": "MGR_004",
+    "order_date": "2025-03-02T09:00:00Z",
+    "payment_method": "Cash",
+    "total_amount": 262000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 1, "unit_price": 159000 },
+      { "product_sku": "SKU-0402", "product_name": "KitKat 4-Finger Bar", "quantity": 2, "unit_price": 18000 },
+      { "product_sku": "SKU-0205", "product_name": "Butter Anchor 227g", "quantity": 1, "unit_price": 68000 }
+    ]
+  },
+  {
+    "order_id": "ORD_011",
+    "store_id": "STORE_004",
+    "manager_id": "MGR_004",
+    "order_date": "2025-03-03T11:45:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 448000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0304", "product_name": "Butter Cookies Tin 400g", "quantity": 1, "unit_price": 120000 },
+      { "product_sku": "SKU-0605", "product_name": "Laundry Detergent OMO 2.7kg", "quantity": 1, "unit_price": 135000 },
+      { "product_sku": "SKU-0704", "product_name": "Body Lotion Nivea 400ml", "quantity": 1, "unit_price": 95000 },
+      { "product_sku": "SKU-0502", "product_name": "Red Apple Fuji 1kg", "quantity": 1, "unit_price": 65000 },
+      { "product_sku": "SKU-0501", "product_name": "Banana Cavendish 1kg", "quantity": 1, "unit_price": 28000 }
+    ]
+  },
+  {
+    "order_id": "ORD_012",
+    "store_id": "STORE_001",
+    "manager_id": "MGR_001",
+    "order_date": "2025-02-10T10:00:00Z",
+    "payment_method": "Cash",
+    "total_amount": 225000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0102", "product_name": "Organic Green Tea 100 bags", "quantity": 1, "unit_price": 125000 },
+      { "product_sku": "SKU-0401", "product_name": "Lay's Classic Chips 150g", "quantity": 1, "unit_price": 32000 },
+      { "product_sku": "SKU-0205", "product_name": "Butter Anchor 227g", "quantity": 1, "unit_price": 68000 }
+    ]
+  },
+  {
+    "order_id": "ORD_013",
+    "store_id": "STORE_002",
+    "manager_id": "MGR_002",
+    "order_date": "2025-02-15T14:30:00Z",
+    "payment_method": "Cash",
+    "total_amount": 128000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0103", "product_name": "Orange Juice 1L", "quantity": 1, "unit_price": 45000 },
+      { "product_sku": "SKU-0301", "product_name": "Whole Wheat Bread", "quantity": 1, "unit_price": 35000 },
+      { "product_sku": "SKU-0104", "product_name": "Coca-Cola 330ml x6", "quantity": 1, "unit_price": 48000 }
+    ]
+  },
+  {
+    "order_id": "ORD_014",
+    "store_id": "STORE_003",
+    "manager_id": "MGR_003",
+    "order_date": "2025-02-20T16:00:00Z",
+    "payment_method": "Transfer",
+    "total_amount": 535000,
+    "status": "completed",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 2, "unit_price": 159000 },
+      { "product_sku": "SKU-0303", "product_name": "Chocolate Cake Slice", "quantity": 2, "unit_price": 45000 },
+      { "product_sku": "SKU-0203", "product_name": "Mozzarella Cheese 200g", "quantity": 1, "unit_price": 75000 },
+      { "product_sku": "SKU-0504", "product_name": "Carrot Organic 500g", "quantity": 1, "unit_price": 22000 }
+    ]
+  },
+  {
+    "order_id": "ORD_015",
+    "store_id": "STORE_004",
+    "manager_id": "MGR_004",
+    "order_date": "2025-02-25T11:00:00Z",
+    "payment_method": "Cash",
+    "total_amount": 189000,
+    "status": "cancelled",
+    "order_type": "sale",
+    "items": [
+      { "product_sku": "SKU-0101", "product_name": "Premium Coffee Beans 500g", "quantity": 1, "unit_price": 159000 },
+      { "product_sku": "SKU-0505", "product_name": "Cherry Tomato 250g", "quantity": 1, "unit_price": 35000 }
+    ]
+  }
+]
