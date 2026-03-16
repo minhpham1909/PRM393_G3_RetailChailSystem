@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Model đại diện cho tài khoản người dùng trong hệ thống
-/// Dùng chung cho cả 3 actor: System Admin, Store Manager, Staff
+/// Dùng chung cho cả 2 actor: System Admin, Store Manager
 class UserModel {
   final String accountId;
   final String email;
   final String fullName;
-  final String role; // 'admin', 'manager', 'staff'
-  final String? storeId; // Chỉ có với Store Manager và Staff
-  final bool isActive;
+  final String role; // 'admin', 'store_manager'
+  final String? storeId; // Chỉ có với Store Manager
 
   UserModel({
     required this.accountId,
@@ -16,7 +15,6 @@ class UserModel {
     required this.fullName,
     required this.role,
     this.storeId,
-    this.isActive = true,
   });
 
   /// Chuyển đổi từ Firestore document sang UserModel
@@ -26,9 +24,8 @@ class UserModel {
       accountId: doc.id,
       email: data['email'] ?? '',
       fullName: data['full_name'] ?? '',
-      role: data['role'] ?? 'staff',
+      role: data['role'] ?? 'store_manager',
       storeId: data['store_id'],
-      isActive: data['is_active'] ?? true,
     );
   }
 
@@ -39,7 +36,6 @@ class UserModel {
       'full_name': fullName,
       'role': role,
       'store_id': storeId,
-      'is_active': isActive,
     };
   }
 
@@ -50,7 +46,6 @@ class UserModel {
     String? fullName,
     String? role,
     String? storeId,
-    bool? isActive,
   }) {
     return UserModel(
       accountId: accountId ?? this.accountId,
@@ -58,7 +53,6 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       role: role ?? this.role,
       storeId: storeId ?? this.storeId,
-      isActive: isActive ?? this.isActive,
     );
   }
 }

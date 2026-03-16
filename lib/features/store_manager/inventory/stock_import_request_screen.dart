@@ -20,7 +20,7 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
   final List<_SelectedProduct> _selectedProducts = [];
 
   // Thông tin form
-  String _sourceWarehouse = 'Main Warehouse (MW-01)';
+  String _sourceWarehouse = 'Central Master Warehouse (WH_MASTER_01)';
   String _priority = 'Normal';
   DateTime? _expectedDate;
   final TextEditingController _notesController = TextEditingController();
@@ -528,12 +528,8 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
                 ),
                 items: const [
                   DropdownMenuItem(
-                    value: 'Main Warehouse (MW-01)',
-                    child: Text('Main Warehouse (MW-01)', style: TextStyle(fontSize: 13)),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Regional Hub - West',
-                    child: Text('Regional Hub - West', style: TextStyle(fontSize: 13)),
+                    value: 'Central Master Warehouse (WH_MASTER_01)',
+                    child: Text('Central Master Warehouse (WH_MASTER_01)', style: TextStyle(fontSize: 13)),
                   ),
                   DropdownMenuItem(
                     value: 'Direct Vendor Ship',

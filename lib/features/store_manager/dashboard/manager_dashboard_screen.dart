@@ -22,8 +22,6 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   // Dữ liệu thống kê
   double _todayRevenue = 0;
   int _totalOrders = 0;
-  int _activeStaff = 0;
-  int _totalStaff = 0;
 
   @override
   void initState() {
@@ -52,22 +50,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         revenue += (doc.data()['total_amount'] ?? 0).toDouble();
       }
 
-      // Lấy số lượng nhân viên
-      final staffSnapshot =
-          await _firestoreService.db
-              .collection('users')
-              .where('role', isEqualTo: 'staff')
-              .get();
-
-      final activeCount =
-          staffSnapshot.docs.where((d) => d.data()['is_active'] == true).length;
-
       if (mounted) {
         setState(() {
           _todayRevenue = revenue;
           _totalOrders = ordersSnapshot.docs.length;
-          _totalStaff = staffSnapshot.docs.length;
-          _activeStaff = activeCount;
         });
       }
     } catch (e) {
@@ -167,87 +153,47 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   Widget _buildStatsRow(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      children: [
-        // Thẻ đơn hàng
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ORDERS',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$_totalOrders',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                // Thanh tiến trình
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: _totalOrders > 0 ? (_totalOrders / 100).clamp(0, 1) : 0,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    color: colorScheme.primary,
-                    minHeight: 4,
-                  ),
-                ),
-              ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TODAY\'S ORDERS',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // Thẻ nhân viên hoạt động
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ACTIVE STAFF',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '$_activeStaff / $_totalStaff',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 8),
+          Text(
+            '$_totalOrders',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          // Thanh tiến trình
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: _totalOrders > 0 ? (_totalOrders / 100).clamp(0, 1) : 0,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              color: colorScheme.primary,
+              minHeight: 4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -280,24 +226,14 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           },
         ),
         const SizedBox(height: 8),
-        // Mục 2: Nhân sự
-        _buildControlItem(
-          context,
-          icon: Icons.groups_outlined,
-          title: 'Staff Roster',
-          subtitle: 'Shift schedules & attendance',
-          onTap: () {
-            widget.onNavigate(2);
-          },
-        ),
-        const SizedBox(height: 8),
+        // Removed Staff Roster completely
         // Mục 3: Hiệu suất chi nhánh
         _buildControlItem(
           context,
           icon: Icons.assessment_outlined,
           title: 'Branch Performance',
           subtitle: 'Detailed sales analytics',
-          onTap: () => widget.onNavigate(3), // Navigate to Reports
+          onTap: () => widget.onNavigate(2), // Navigate to Reports
         ),
       ],
     );
@@ -414,3 +350,4 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 }
+

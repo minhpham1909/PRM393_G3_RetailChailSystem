@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Model đại diện cho đơn hàng (giao dịch bán hàng)
-/// Dùng cho Staff (tạo đơn), Manager (xem báo cáo), Admin (báo cáo chuỗi)
+/// Dùng cho Manager (nhập đơn hàng/báo cáo)
 class OrderModel {
   final String orderId;
-  final String staffId;
-  final String? customerId;
+  final String managerId;
   final String storeId;
   final double totalAmount;
   final String paymentMethod; // 'Cash' hoặc 'Transfer'
@@ -16,8 +15,7 @@ class OrderModel {
 
   OrderModel({
     required this.orderId,
-    required this.staffId,
-    this.customerId,
+    required this.managerId,
     required this.storeId,
     required this.totalAmount,
     required this.paymentMethod,
@@ -32,8 +30,7 @@ class OrderModel {
     final data = doc.data() as Map<String, dynamic>;
     return OrderModel(
       orderId: doc.id,
-      staffId: data['staff_id'] ?? '',
-      customerId: data['customer_id'],
+      managerId: data['manager_id'] ?? '',
       storeId: data['store_id'] ?? '',
       totalAmount: (data['total_amount'] ?? 0).toDouble(),
       paymentMethod: data['payment_method'] ?? 'Cash',
@@ -47,8 +44,7 @@ class OrderModel {
   /// Chuyển đổi OrderModel sang Map để lưu vào Firestore
   Map<String, dynamic> toFirestore() {
     return {
-      'staff_id': staffId,
-      'customer_id': customerId,
+      'manager_id': managerId,
       'store_id': storeId,
       'total_amount': totalAmount,
       'payment_method': paymentMethod,
