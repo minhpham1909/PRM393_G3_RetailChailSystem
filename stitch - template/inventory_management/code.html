@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#ffb68f",
+              "on-tertiary-fixed-variant": "#773200",
+              "on-tertiary-container": "#ffa777",
+              "on-primary-fixed": "#001945",
+              "tertiary": "#5b2500",
+              "surface": "#f8fafb",
+              "surface-variant": "#e1e3e4",
+              "surface-container-low": "#f2f4f5",
+              "secondary-fixed": "#a3f69c",
+              "surface-container": "#eceeef",
+              "primary-fixed-dim": "#b0c6ff",
+              "on-secondary-container": "#217128",
+              "surface-dim": "#d8dadb",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#93000a",
+              "outline": "#737783",
+              "surface-tint": "#2b5bb5",
+              "on-primary-container": "#a1bbff",
+              "primary-fixed": "#d9e2ff",
+              "on-background": "#191c1d",
+              "tertiary-fixed": "#ffdbca",
+              "surface-container-highest": "#e1e3e4",
+              "tertiary-container": "#7f3600",
+              "on-tertiary-fixed": "#331200",
+              "on-primary-fixed-variant": "#00429c",
+              "surface-container-high": "#e6e8e9",
+              "background": "#f8fafb",
+              "secondary-container": "#a0f399",
+              "secondary": "#1b6d24",
+              "on-secondary-fixed-variant": "#005312",
+              "on-error": "#ffffff",
+              "error": "#ba1a1a",
+              "on-tertiary": "#ffffff",
+              "surface-bright": "#f8fafb",
+              "inverse-primary": "#b0c6ff",
+              "primary-container": "#0d47a1",
+              "on-secondary": "#ffffff",
+              "inverse-on-surface": "#eff1f2",
+              "on-surface-variant": "#434652",
+              "error-container": "#ffdad6",
+              "primary": "#003178",
+              "on-primary": "#ffffff",
+              "on-secondary-fixed": "#002204",
+              "outline-variant": "#c3c6d4",
+              "inverse-surface": "#2e3132",
+              "secondary-fixed-dim": "#88d982",
+              "on-surface": "#191c1d"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-nav {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafb;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-surface-bright/90 backdrop-blur-md px-5 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="menu">menu</span>
+<h1 class="text-on-surface font-headline font-semibold text-lg">Store Inventory</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<main class="px-5 pb-32 max-w-4xl mx-auto space-y-8 mt-4">
+<!-- Summary Dashboard (Editorial Scaling) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col justify-between h-32">
+<span class="text-xs font-label uppercase tracking-wider text-on-surface-variant">Total Items</span>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-headline font-bold text-on-surface">1,284</span>
+<span class="material-symbols-outlined text-secondary" data-icon="inventory">inventory</span>
+</div>
+</div>
+<div class="bg-secondary-container p-6 rounded-xl flex flex-col justify-between h-32">
+<span class="text-xs font-label uppercase tracking-wider text-on-secondary-container">Low Stock Alerts</span>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-headline font-bold text-on-secondary-container">12</span>
+<span class="material-symbols-outlined text-secondary" data-icon="warning">warning</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col justify-between h-32">
+<span class="text-xs font-label uppercase tracking-wider text-on-surface-variant">Pending Requests</span>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-headline font-bold text-on-surface">5</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="pending_actions">pending_actions</span>
+</div>
+</div>
+</section>
+<!-- Search & Filter Controls -->
+<section class="space-y-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all shadow-sm" placeholder="Search for products..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-6 py-2 rounded-full bg-secondary text-on-secondary font-label text-sm whitespace-nowrap">All</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-highest text-on-surface font-label text-sm whitespace-nowrap">Low Stock</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-highest text-on-surface font-label text-sm whitespace-nowrap">Out of Stock</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-highest text-on-surface font-label text-sm whitespace-nowrap">Backordered</button>
+</div>
+</section>
+<!-- Inventory List (Bento-lite Card Pattern) -->
+<section class="space-y-4">
+<h2 class="text-xl font-headline font-semibold px-1">Inventory Items</h2>
+<div class="grid grid-cols-1 gap-4">
+<!-- Item 1: Low Stock -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 transition-colors hover:bg-surface-container-low">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Premium watch product" class="w-full h-full object-cover" data-alt="Modern minimalist watch on white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhzRW29NUjipsfBD8wDwEp6sfmjOq85DoXnRHANomsAQazAObLFSd7xPhV0_vOFQCNW4zWCr3NrhGRpdXLdOsf5eufHrIwYgkbGQ5swLcGzNvvrffJX3h5aKDmJ7iZFZUCheu8UBYPNQnYtSmS59YMURkCYqtCOUrvDURCIaUIlaQX70AvB36xEAsQDyCupLbBmb1LKkqcnzjMn_Oxm1Ku3f3p-jBgOPaKHF1mKQZ2aOO13jpV6nCR5X-e7fZ77fI-rOyACaWspwM"/>
+</div>
+<div class="flex-grow flex flex-col justify-center min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="font-headline font-medium text-on-surface truncate">Elysian Chronograph</h3>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Low Stock</span>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="text-sm text-on-surface-variant">Stock: <span class="font-bold text-on-surface">14</span> units</span>
+<button class="text-secondary font-label text-xs font-semibold flex items-center gap-1">
+                                Request Stock <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 2: Stable -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 transition-colors hover:bg-surface-container-low">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Wireless headphones" class="w-full h-full object-cover" data-alt="Studio quality over-ear wireless headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB04SXfWeVBcrQHN1tc9OiGHUVNi8hI9zTY2LmIl6wtYysTc1aH_6HofKUbuA4sifTHvJQ8kCDAXZ03T0ye-mB9pkKwuRruka8bEhM96_YY856p_rnpG1akuGA6QMwjwwSn071dN9oEHBvPwe3lbDYXt3ICwfJuVmHl9p3P2SdCl-6cRL2PVyGXppZbblKejOQCkB_IUiuJh1uALruc5XCiTNJgjVoEYBZSsWyDXI5ABG9aVo1uQ6f0F8oIuD_Lg2C0O6lKhqZcA14"/>
+</div>
+<div class="flex-grow flex flex-col justify-center min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="font-headline font-medium text-on-surface truncate">Aura Noise Cancelling</h3>
+<span class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Stable</span>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="text-sm text-on-surface-variant">Stock: <span class="font-bold text-on-surface">412</span> units</span>
+<button class="text-secondary font-label text-xs font-semibold flex items-center gap-1">
+                                Request Stock <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 3: Critical -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 transition-colors hover:bg-surface-container-low">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Running shoes" class="w-full h-full object-cover" data-alt="Red athletic running shoe studio shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxFWcW0E0hMUutJpVPWYS9ltbUL_KApg3R-t6QFPgM9MUSJR7RGUKvd8KWvvq85tqkYYgpBa1kfEBTeh7e6W4reOkGfgaHFXRzZITLgPQSKI8l5iMi1is_ujJAP-JFWEZ8DNM1q6LCo568l6dzG1NJoauQnNnPrB3cvf8r_GkI0TTMI3wxdLYnHeQzFyM2E-gcVNp-vby_sVFQuohTgeydJhyPCCP5KKrGznSM1kAdboOpdfLta1FXR5WRCegSNPlCPXr_7LFcYxg"/>
+</div>
+<div class="flex-grow flex flex-col justify-center min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="font-headline font-medium text-on-surface truncate">Stride Pro Runners</h3>
+<span class="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Critical</span>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="text-sm text-on-surface-variant">Stock: <span class="font-bold text-error">2</span> units</span>
+<button class="text-secondary font-label text-xs font-semibold flex items-center gap-1">
+                                Request Stock <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 4: Stable -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 transition-colors hover:bg-surface-container-low">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Instant camera" class="w-full h-full object-cover" data-alt="Retro aesthetic instant film camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOFVlVFFwKRZ-zIkO3zc0avS8pN51SgM_ikDkWI5z3QcbApFcPfnlvUdJ3Gd3CFf5-TiWCnn_gBtFwyzt5JSrIYPEP8J0DX90yw_10TnqOUXyPg9jAIEjz0HtETVRulJx-3PPp2AfMy-jfE0xYjbU3cs87FpaaX1xm5Sd48OTQmAgBmHYy7nJ5NYhfxTmMeeFsewVbn6zwOwNfjo1Ggz457uvGZ4xr_7_057qO2ZSXa_ZyPZgOBOGmJ6S0Sd9-ppcWJriMQvbKmOI"/>
+</div>
+<div class="flex-grow flex flex-col justify-center min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="font-headline font-medium text-on-surface truncate">Polaris Instant Cam</h3>
+<span class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Stable</span>
+</div>
+<div class="flex items-center justify-between mt-1">
+<span class="text-sm text-on-surface-variant">Stock: <span class="font-bold text-on-surface">88</span> units</span>
+<button class="text-secondary font-label text-xs font-semibold flex items-center gap-1">
+                                Request Stock <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-5 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-lg flex items-center justify-center z-40">
+<span class="material-symbols-outlined" data-icon="add" style="font-variation-settings: 'FILL' 0; font-size: 32px;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav border-t border-outline-variant/10 px-6 py-3 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-label text-on-surface-variant">Dashboard</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-secondary" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] font-label text-secondary font-semibold">Inventory</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="groups">groups</span>
+<span class="text-[10px] font-label text-on-surface-variant">Team</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="assessment">assessment</span>
+<span class="text-[10px] font-label text-on-surface-variant">Reports</span>
+</div>
+</nav>
+</body></html>

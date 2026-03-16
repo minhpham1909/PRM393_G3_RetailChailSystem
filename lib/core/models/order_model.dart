@@ -12,6 +12,7 @@ class OrderModel {
   final DateTime? updatedAt;
   final String orderType; // 'sale' hoặc 'stock_request'
   final String status; // 'pending', 'paid', 'completed', 'cancelled'
+  final List<OrderDetailModel> items;
 
   OrderModel({
     required this.orderId,
@@ -23,6 +24,7 @@ class OrderModel {
     this.updatedAt,
     required this.orderType,
     this.status = 'pending',
+    this.items = const [],
   });
 
   /// Chuyển đổi từ Firestore document sang OrderModel
@@ -38,6 +40,10 @@ class OrderModel {
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       orderType: data['order_type'] ?? 'sale',
       status: data['status'] ?? 'pending',
+      items: (data['items'] as List<dynamic>?)
+              ?.map((item) => OrderDetailModel.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -52,6 +58,7 @@ class OrderModel {
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'order_type': orderType,
       'status': status,
+      'items': items.map((e) => e.toMap()).toList(),
     };
   }
 }
@@ -72,11 +79,16 @@ class OrderDetailModel {
     required this.unitPrice,
   });
 
-  /// Chuyển đổi từ Firestore document sang OrderDetailModel
+  /// Chuyển đổi từ Firestore document sang OrderDetailModel (tương thích ngược)
   factory OrderDetailModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    return OrderDetailModel.fromMap(data).copyWith(orderDetailId: doc.id);
+  }
+
+  /// Chuyển đổi từ Map (khi nằm trong mảng items của OrderModel)
+  factory OrderDetailModel.fromMap(Map<String, dynamic> data) {
     return OrderDetailModel(
-      orderDetailId: doc.id,
+      orderDetailId: data['order_detail_id'] ?? '',
       orderId: data['order_id'] ?? '',
       productId: data['product_id'] ?? '',
       quantity: (data['quantity'] ?? 0).toInt(),
@@ -84,14 +96,35 @@ class OrderDetailModel {
     );
   }
 
-  /// Chuyển đổi OrderDetailModel sang Map để lưu vào Firestore
-  Map<String, dynamic> toFirestore() {
+  /// Chuyển đổi OrderDetailModel sang Map để lưu vào mảng items của Firestore
+  Map<String, dynamic> toMap() {
     return {
+      'order_detail_id': orderDetailId,
       'order_id': orderId,
       'product_id': productId,
       'quantity': quantity,
       'unit_price': unitPrice,
     };
+  }
+
+  /// Tương thích ngược toFirestore
+  Map<String, dynamic> toFirestore() => toMap();
+
+  /// Sao chép OrderDetailModel với giá trị mới
+  OrderDetailModel copyWith({
+    String? orderDetailId,
+    String? orderId,
+    String? productId,
+    int? quantity,
+    double? unitPrice,
+  }) {
+    return OrderDetailModel(
+      orderDetailId: orderDetailId ?? this.orderDetailId,
+      orderId: orderId ?? this.orderId,
+      productId: productId ?? this.productId,
+      quantity: quantity ?? this.quantity,
+      unitPrice: unitPrice ?? this.unitPrice,
+    );
   }
 
   /// Tính tổng tiền của dòng sản phẩm

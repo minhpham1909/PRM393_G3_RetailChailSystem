@@ -23,6 +23,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   double _todayRevenue = 0;
   int _totalOrders = 0;
 
+  String _formatCurrency(double amount) {
+    return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} VND';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,7 +71,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: const ManagerAppBar(title: 'Dashboard'),
+      appBar: const ManagerAppBar(),
       body: RefreshIndicator(
         onRefresh: _loadDashboardData,
         child: SingleChildScrollView(
@@ -88,8 +92,6 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               _buildManagementControls(context),
               const SizedBox(height: 24),
 
-              // ===== THÔNG BÁO CUỐI NGÀY =====
-              _buildEndOfDayBanner(context),
             ],
           ),
         ),
@@ -136,7 +138,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           const SizedBox(height: 12),
           // Số tiền lớn
           Text(
-            '\$${_todayRevenue.toStringAsFixed(2)}',
+            _formatCurrency(_todayRevenue),
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w700,
@@ -305,49 +307,4 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Banner thông báo cuối ngày — theo stitch: End of Day Report
-  Widget _buildEndOfDayBanner(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'End of Day Report',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Start preparing the reconciliation report.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Nút bắt đầu
-          FilledButton.tonal(
-            onPressed: () {},
-            child: const Text('Start Report'),
-          ),
-        ],
-      ),
-    );
-  }
 }
-

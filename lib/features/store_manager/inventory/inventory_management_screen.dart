@@ -96,7 +96,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLowest,
-      appBar: const ManagerAppBar(title: 'Store Inventory'),
+      appBar: const ManagerAppBar(),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadProducts,

@@ -80,7 +80,7 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLowest,
-      appBar: const ManagerAppBar(title: 'Manager Profile'),
+      appBar: const ManagerAppBar(showBackButton: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

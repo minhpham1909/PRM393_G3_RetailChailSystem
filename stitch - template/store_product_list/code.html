@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#2e3132",
+              "on-tertiary-fixed": "#331200",
+              "background": "#f8fafb",
+              "primary-fixed-dim": "#b0c6ff",
+              "surface-container-lowest": "#ffffff",
+              "on-surface-variant": "#434652",
+              "surface-bright": "#f8fafb",
+              "on-secondary-fixed": "#002204",
+              "surface": "#f8fafb",
+              "surface-dim": "#d8dadb",
+              "surface-container": "#eceeef",
+              "on-tertiary-fixed-variant": "#773200",
+              "on-tertiary": "#ffffff",
+              "inverse-primary": "#b0c6ff",
+              "surface-container-low": "#f2f4f5",
+              "on-background": "#191c1d",
+              "on-primary-fixed-variant": "#00429c",
+              "outline-variant": "#c3c6d4",
+              "on-primary-container": "#a1bbff",
+              "surface-tint": "#2b5bb5",
+              "surface-container-high": "#e6e8e9",
+              "secondary-fixed": "#a3f69c",
+              "surface-variant": "#e1e3e4",
+              "outline": "#737783",
+              "secondary": "#1b6d24",
+              "on-primary": "#ffffff",
+              "on-secondary-fixed-variant": "#005312",
+              "on-error": "#ffffff",
+              "tertiary-container": "#7f3600",
+              "surface-container-highest": "#e1e3e4",
+              "on-surface": "#191c1d",
+              "tertiary-fixed-dim": "#ffb68f",
+              "on-primary-fixed": "#001945",
+              "error": "#ba1a1a",
+              "secondary-container": "#a0f399",
+              "primary": "#003178",
+              "error-container": "#ffdad6",
+              "primary-container": "#0d47a1",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#eff1f2",
+              "tertiary": "#5b2500",
+              "tertiary-fixed": "#ffdbca",
+              "on-secondary": "#ffffff",
+              "on-tertiary-container": "#ffa777",
+              "secondary-fixed-dim": "#88d982",
+              "primary-fixed": "#d9e2ff",
+              "on-secondary-container": "#217128"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body { font-family: 'Inter', sans-serif; }
+      .glass-nav {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-surface-bright/90 backdrop-blur-md px-5 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<button class="text-on-surface">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="text-title-lg font-semibold tracking-tight text-on-surface">Store Inventory</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface">
+<span class="material-symbols-outlined" data-icon="barcode_scanner">barcode_scanner</span>
+</button>
+</header>
+<main class="px-5 space-y-6">
+<!-- SearchBar -->
+<div class="mt-4">
+<div class="relative flex items-center">
+<span class="absolute left-4 material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl py-4 pl-12 pr-4 text-body-md focus:ring-2 focus:ring-tertiary-container transition-all shadow-sm outline-none" placeholder="Search products..." type="text"/>
+<div class="absolute right-2 bottom-0 h-1 w-12 bg-tertiary rounded-t-full"></div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-6 py-2 rounded-full bg-tertiary text-on-tertiary text-label-md font-medium whitespace-nowrap">All</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-label-md font-medium whitespace-nowrap">Electronics</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-label-md font-medium whitespace-nowrap">Apparel</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant text-label-md font-medium whitespace-nowrap">Home</button>
+</div>
+<!-- Bento Grid Product List -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Product Card 1: Featured/Large -->
+<div class="group relative bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm transition-transform hover:scale-[1.01] flex flex-col">
+<div class="h-48 bg-surface-container-low overflow-hidden relative">
+<img alt="Headphones" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="High-end wireless noise cancelling headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmWUiJ8z44mCbWXINOfPrzT1Jb8LB5CCXiAmGxrWHPE_uxZTFm_sBzcNvIsDa_Hg4dfIKOHWbk5L5wLnqQdkcEjMwEDVVh08KMt1ue_Tg1INrSQXGgBmdR-dbKZrfdLv5WhokBOv5uvcWjlKNFId-iahj3b0MVMygfLQFtHmYTsG7Y4-TxBPeb4Bk0yYZW7JDShzU4b3suhaBDG3XU6Anl-OqZifexBiJ9CBvGvuBB0LRzZxEzYfDlrw1WpRxJaZX5pThlw3DBfSk"/>
+<div class="absolute top-3 right-3">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">In Stock</span>
+</div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="text-title-lg font-bold text-on-surface">Premium Wireless Audio</h3>
+<p class="text-label-sm text-outline uppercase tracking-widest font-bold">SKU: AU-9920-X</p>
+</div>
+<span class="text-display-md font-black text-tertiary">$299</span>
+</div>
+<div class="mt-auto pt-4 flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-md">24 Units</span>
+</div>
+<button class="flex items-center gap-2 bg-tertiary text-on-tertiary px-6 py-3 rounded-full font-bold shadow-lg shadow-tertiary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-lg" data-icon="add_shopping_cart">add_shopping_cart</span>
+<span>Add to Cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex">
+<div class="w-32 bg-surface-container-low flex-shrink-0">
+<img alt="Sneakers" class="w-full h-full object-cover" data-alt="Vibrant red athletic running shoes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAik5wsUHIrSmPRrevO81OXJDd-EucI2IwttTeNrMK3gL1QDLeT12kTAWSZtR_GpZMLE-2JvsCrTPN6YcvCsv5AqBiBP_V2F3KOD1B6KGaiRres5ADMrxkjjyDRziF6zNWEd1YWBfbKe_trwYgD_EMk5GhxmqGQxNJlR4m02gq2PKU75PE0VnLBDKp7DdW_ZpWE3FAKcDF9IirfzTlWpF0aIRRYkbdBO6uoB-cQo58QZL0PDOXf-5lz_7zBh3vejwhIzlFpkP6Eaag"/>
+</div>
+<div class="p-4 flex flex-col justify-between flex-grow">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-body-lg font-bold text-on-surface">Pro Runner X1</h3>
+<span class="text-tertiary font-bold">$120</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">SKU: SH-102-RD</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-label-sm text-secondary font-semibold">12 in stock</span>
+<button class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container hover:bg-tertiary hover:text-on-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex">
+<div class="w-32 bg-surface-container-low flex-shrink-0">
+<img alt="Watch" class="w-full h-full object-cover" data-alt="Minimalist white smart watch with rubber strap" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSKDjssPFRyRRiVXq4YJzCTkV5K8xoBfitMa2C4kq9smJ370gmCusQJzQg_ygVNy3SQGfChOAikZZS9GIY-cQs8X1nc_uCjte0eYSbDMsMC-TkLJR1TBCq6QsStN0vqsdUmJ5Wmq9Px8UPoipFjD8P0KhNfESIZ-AYXbJAZ35uTLm8jc9ZdwcWaxzM40fVTQB05fuAv3QAPsHxg9X1XrD6PYNrcqjun6s60tgaP-_kjmBIm_EqXOemlDzNG-BFcAZ9yQOL5fpM7PI"/>
+</div>
+<div class="p-4 flex flex-col justify-between flex-grow">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-body-lg font-bold text-on-surface">Minimalist Watch</h3>
+<span class="text-tertiary font-bold">$85</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">SKU: WA-441-WT</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-label-sm text-error font-semibold">Only 2 left!</span>
+<button class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container hover:bg-tertiary hover:text-on-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex">
+<div class="w-32 bg-surface-container-low flex-shrink-0">
+<img alt="Camera" class="w-full h-full object-cover" data-alt="Vintage style modern digital camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAybosHp6avbmXToot8Yolhem99forvPbExV_IujKxjnGXqEoG-fheEMW8DCGnAIkUwXjbv-GcfNRrPmhyyXq731Tr0DhHVfsI0TquXL65hOo2Wf3xAjp_3fQcnRoNhXsUTzdwXunwuWGvONoipEZ3-aoKvpxQM7XctvVGvCVZtIl0vB3269nIdZynTBHKljTuTDkZAVnMuRdJ8fMXNrwX1qa2pTPeYqzv9o-qGKMv6PG9y1709Qcb9FghhYkUyOYxXj0vXBPIt3E"/>
+</div>
+<div class="p-4 flex flex-col justify-between flex-grow">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-body-lg font-bold text-on-surface">RetroShot Camera</h3>
+<span class="text-tertiary font-bold">$450</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">SKU: CA-882-BK</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-label-sm text-secondary font-semibold">8 in stock</span>
+<button class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container hover:bg-tertiary hover:text-on-tertiary transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Staff Action Banner -->
+<div class="md:col-span-2 bg-gradient-to-r from-tertiary to-tertiary-container p-6 rounded-xl text-on-tertiary flex items-center justify-between shadow-lg shadow-tertiary/10">
+<div class="space-y-1">
+<p class="text-label-sm uppercase tracking-widest opacity-80">Shift Target</p>
+<h4 class="text-title-lg font-bold">85% Complete</h4>
+<p class="text-body-sm opacity-90">Keep going! You're 12 sales away from bonus.</p>
+</div>
+<div class="w-16 h-16 rounded-full border-4 border-on-tertiary/20 flex items-center justify-center">
+<span class="text-title-md font-bold">85%</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav h-20 border-t border-outline-variant/10 px-4 flex items-center justify-around z-50">
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-tertiary transition-colors" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-medium text-on-surface-variant group-hover:text-tertiary">Dashboard</span>
+</div>
+<div class="flex flex-col items-center gap-1 group relative">
+<div class="absolute -top-10 w-14 h-14 bg-tertiary rounded-full shadow-xl flex items-center justify-center text-on-tertiary border-4 border-background">
+<span class="material-symbols-outlined" data-icon="point_of_sale" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+</div>
+<span class="mt-6 text-[10px] font-bold text-tertiary">POS</span>
+</div>
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-tertiary transition-colors" data-icon="group">group</span>
+<span class="text-[10px] font-medium text-on-surface-variant group-hover:text-tertiary">Customers</span>
+</div>
+<div class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-tertiary transition-colors" data-icon="person">person</span>
+<span class="text-[10px] font-medium text-on-surface-variant group-hover:text-tertiary">Profile</span>
+</div>
+</nav>
+</body></html>

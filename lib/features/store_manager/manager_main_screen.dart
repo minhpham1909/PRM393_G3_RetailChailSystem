@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dashboard/manager_dashboard_screen.dart';
 import 'inventory/inventory_management_screen.dart';
 import 'reports/store_report_screen.dart';
-import 'profile/manager_profile_screen.dart';
+import 'pos/pos_checkout_screen.dart';
 
 /// Màn hình chính của Store Manager
 /// Chứa Bottom Navigation Bar với 4 tab: Dashboard, Inventory, Reports, Profile
@@ -30,7 +30,7 @@ class _ManagerMainScreenState extends State<ManagerMainScreen> {
       ),
       const InventoryManagementScreen(),
       const StoreReportScreen(),
-      const ManagerProfileScreen(),
+      const PosCheckoutScreen(),
     ];
 
     return Scaffold(
@@ -61,11 +61,11 @@ class _ManagerMainScreenState extends State<ManagerMainScreen> {
             selectedIcon: Icon(Icons.assessment),
             label: 'Reports',
           ),
-          // Tab 3: Profile (Hồ sơ)
+          // Tab 3: POS
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.point_of_sale_outlined),
+            selectedIcon: Icon(Icons.point_of_sale),
+            label: 'POS',
           ),
         ],
       ),
