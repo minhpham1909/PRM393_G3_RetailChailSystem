@@ -4,14 +4,17 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_routes.dart';
 import 'features/store_manager/manager_main_screen.dart';
+import 'features/store_manager/reports/order_detail_screen.dart';
 import 'features/store_manager/inventory/stock_import_request_screen.dart';
 import 'features/store_manager/profile/manager_profile_screen.dart';
 import 'features/store_manager/profile/manager_settings_screen.dart';
 import 'features/store_manager/inventory/recent_requests_screen.dart';
+import 'features/store_manager/inventory/product_detail_screen.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
 import 'features/auth/screens/admin_placeholder_screen.dart';
+import 'features/auth/widgets/protected_route.dart';
 
 /// Điểm khởi đầu ứng dụng Retail Chain Management System
 /// Khởi tạo Firebase và chạy ứng dụng
@@ -46,18 +49,40 @@ class RCMSApp extends StatelessWidget {
         AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
 
         // ===== Routes Store Manager =====
-        AppRoutes.manager: (context) => const ManagerMainScreen(),
-        AppRoutes.managerProfile: (context) => const ManagerProfileScreen(),
-        AppRoutes.managerSettings: (context) => const ManagerSettingsScreen(),
-        AppRoutes.stockImportRequest: (context) =>
-            const StockImportRequestScreen(),
-        AppRoutes.recentRequests: (context) => const RecentRequestsScreen(),
+        AppRoutes.manager: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: ManagerMainScreen(),
+            ),
+        AppRoutes.managerProfile: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: ManagerProfileScreen(),
+            ),
+        AppRoutes.managerSettings: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: ManagerSettingsScreen(),
+            ),
+        AppRoutes.stockImportRequest: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: StockImportRequestScreen(),
+            ),
+        AppRoutes.recentRequests: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: RecentRequestsScreen(),
+            ),
+        AppRoutes.productDetail: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: ProductDetailScreen(),
+            ),
+        AppRoutes.orderDetail: (context) => const ProtectedRoute(
+              allowedRoles: ['store_manager'],
+              child: OrderDetailScreen(),
+            ),
 
         // ===== Routes Admin =====
-        AppRoutes.admin: (context) => const AdminPlaceholderScreen(),
-
-        // Route Staff (thêm sau bởi team member khác)
-        // AppRoutes.staff: (_) => const StaffMainScreen(),
+        AppRoutes.admin: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: AdminPlaceholderScreen(),
+            ),
       },
     );
   }
