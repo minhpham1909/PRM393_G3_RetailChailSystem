@@ -49,7 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      // AuthGate sẽ tự điều hướng dựa trên role.
+      // Điều hướng về AuthGate để nó check role và redirect tới manager/admin
+      Navigator.pushReplacementNamed(context, '/');
     } catch (e) {
       if (!mounted) return;
       setState(() {
