@@ -7,6 +7,7 @@ class AppRoutes {
   // ===== Route chung =====
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
+  static const String productDetail = '/product-detail';
 
   // ===== Route Store Manager =====
   static const String manager = '/manager';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String managerSettings = '/manager/settings';
   static const String stockImportRequest = '/manager/stock_import_request';
   static const String recentRequests = '/manager/recent_requests';
+  static const String orderDetail = '/manager/order_detail';
 
   // Admin Routes (thêm sau)
   static const String admin = '/admin';

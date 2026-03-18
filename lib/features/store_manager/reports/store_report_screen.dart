@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/order_model.dart';
 import '../widgets/manager_app_bar.dart';
+import '../../../core/constants/app_routes.dart'; // Added this import
 
 /// Màn hình Báo cáo Chi nhánh (Store Report)
 /// Hiển thị doanh thu thực tế, lọc theo ngày/tháng, và danh sách hóa đơn
@@ -20,59 +21,8 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   DateTime _selectedDate = DateTime.now();
   String _filterMode = 'Day'; // 'Day' hoặc 'Month'
 
-  // Data
-  List<OrderModel> _invoices = [];
-  double _totalRevenue = 0;
-  bool _isLoading = true;
-
   String _formatCurrency(double amount) {
-    return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} VND';
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadReportData();
-  }
-
-  /// Tải dữ liệu báo cáo từ Firestore dựa trên bộ lọc
-  Future<void> _loadReportData() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
-    try {
-      DateTime start;
-      DateTime end;
-
-      if (_filterMode == 'Day') {
-        start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
-        end = start.add(const Duration(days: 1));
-      } else {
-        start = DateTime(_selectedDate.year, _selectedDate.month, 1);
-        end = DateTime(_selectedDate.year, _selectedDate.month + 1, 1);
-      }
-
-      final snapshot = await _firestoreService.db
-          .collection('orders')
-          .where('status', isEqualTo: 'paid')
-          .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('created_at', isLessThan: Timestamp.fromDate(end))
-          .orderBy('created_at', descending: true)
-          .get();
-
-      final invoices = snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList();
-      final total = invoices.fold(0.0, (sum, order) => sum + order.totalAmount);
-
-      if (mounted) {
-        setState(() {
-          _invoices = invoices;
-          _totalRevenue = total;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Lỗi tải báo cáo: $e');
-      if (mounted) setState(() => _isLoading = false);
-    }
+    return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")} VND';
   }
 
   Future<void> _selectDate() async {
@@ -84,7 +34,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     );
     if (picked != null && picked != _selectedDate) {
       setState(() => _selectedDate = picked);
-      _loadReportData();
     }
   }
 
@@ -92,50 +41,117 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    DateTime start;
+    DateTime end;
+
+    if (_filterMode == 'Day') {
+      start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+      end = start.add(const Duration(days: 1));
+    } else {
+      start = DateTime(_selectedDate.year, _selectedDate.month, 1);
+      end = DateTime(_selectedDate.year, _selectedDate.month + 1, 1);
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: const ManagerAppBar(),
-      body: Column(
-        children: [
-          // Filter Section
-          _buildFilterSection(context),
-          
-          // Summary Header
-          _buildSummaryCard(context),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestoreService.db
+            .collection('orders')
+            .where('status', isEqualTo: 'paid')
+            .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+            .where('created_at', isLessThan: Timestamp.fromDate(end))
+            .orderBy('created_at', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            // Kiểm tra lỗi index
+            if (snapshot.error.toString().contains('requires an index')) {
+                return Center(
+                    child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                                const SizedBox(height: 16),
+                                const Text(
+                                    'The query requires a composite index.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                    snapshot.error.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 12),
+                                ),
+                            ],
+                        ),
+                    ),
+                );
+            }
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 8),
-            child: Row(
-              children: [
-                Text('RECENT INVOICES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-              ],
-            ),
-          ),
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Invoices List
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _invoices.isEmpty
+          final invoices = snapshot.data!.docs.map((doc) => OrderModel.fromFirestore(doc)).toList();
+          final totalRevenue = invoices.fold(0.0, (sum, order) => sum + order.totalAmount);
+
+          return Column(
+            children: [
+              // Filter Section
+              _buildFilterSection(context),
+              
+              // Summary Header
+              _buildSummaryHeader(context, totalRevenue, invoices.length),
+
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 12, 20, 8),
+                child: Row(
+                  children: [
+                    Text('RECENT INVOICES', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  ],
+                ),
+              ),
+
+              // Invoices List
+              Expanded(
+                child: invoices.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.receipt_long_outlined, size: 64, color: colorScheme.surfaceContainerHighest),
                             const SizedBox(height: 16),
-                            Text('Không có hóa đơn nào', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                            Text('No invoices found', style: TextStyle(color: colorScheme.onSurfaceVariant)),
                           ],
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: _invoices.length,
+                        itemCount: invoices.length,
                         itemBuilder: (context, index) {
-                          return _buildInvoiceItem(_invoices[index]);
+                          final order = invoices[index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.orderDetail,
+                                arguments: order,
+                              );
+                            },
+                            child: _buildInvoiceItem(order),
+                          );
                         },
                       ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -147,7 +163,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         children: [
           Row(
             children: [
-              // Day/Month Toggle
               Expanded(
                 child: SegmentedButton<String>(
                   segments: const [
@@ -157,12 +172,10 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                   selected: {_filterMode},
                   onSelectionChanged: (val) {
                     setState(() => _filterMode = val.first);
-                    _loadReportData();
                   },
                 ),
               ),
               const SizedBox(width: 12),
-              // Date Picker Button
               IconButton.filledTonal(
                 onPressed: _selectDate,
                 icon: const Icon(Icons.event),
@@ -173,7 +186,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           Text(
             _filterMode == 'Day'
                 ? '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'
-                : 'Tháng ${_selectedDate.month}/${_selectedDate.year}',
+                : 'Month ${_selectedDate.month}/${_selectedDate.year}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
@@ -181,7 +194,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     );
   }
 
-  Widget _buildSummaryCard(BuildContext context) {
+  Widget _buildSummaryHeader(BuildContext context, double totalRevenue, int orderCount) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -218,9 +231,9 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _formatCurrency(_totalRevenue),
+                _formatCurrency(totalRevenue),
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onPrimary,
                   letterSpacing: -1,
@@ -238,7 +251,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${_invoices.length} Orders Successful',
+            '$orderCount Orders Successful',
             style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7), fontSize: 13),
           ),
         ],
@@ -293,7 +306,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                 _formatCurrency(order.totalAmount),
                 style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary, fontSize: 16),
               ),
-              Text(
+              const Text(
                 'Paid',
                 style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.bold),
               ),

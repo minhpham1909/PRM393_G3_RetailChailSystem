@@ -19,92 +19,101 @@ class ManagerDashboardScreen extends StatefulWidget {
 class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   final FirestoreService _firestoreService = FirestoreService();
 
-  // Dữ liệu thống kê
-  double _todayRevenue = 0;
-  int _totalOrders = 0;
-
   String _formatCurrency(double amount) {
     return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} VND';
   }
 
   @override
-  void initState() {
-    super.initState();
-    _loadDashboardData();
-  }
-
-  /// Tải dữ liệu thống kê cho dashboard
-  Future<void> _loadDashboardData() async {
-    try {
-      // Lấy tổng doanh thu hôm nay từ collection 'orders'
-      final today = DateTime.now();
-      final startOfDay = DateTime(today.year, today.month, today.day);
-      final ordersSnapshot =
-          await _firestoreService.db
-              .collection('orders')
-              .where(
-                'created_at',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-              )
-              .where('status', isEqualTo: 'paid')
-              .get();
-
-      double revenue = 0;
-      for (var doc in ordersSnapshot.docs) {
-        revenue += (doc.data()['total_amount'] ?? 0).toDouble();
-      }
-
-      if (mounted) {
-        setState(() {
-          _todayRevenue = revenue;
-          _totalOrders = ordersSnapshot.docs.length;
-        });
-      }
-    } catch (e) {
-      debugPrint('Lỗi tải dữ liệu dashboard: $e');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final today = DateTime.now();
+    final startOfDay = DateTime(today.year, today.month, today.day);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: const ManagerAppBar(),
-      body: RefreshIndicator(
-        onRefresh: _loadDashboardData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ===== THẺ DOANH THU HÔM NAY =====
-              _buildRevenueCard(context),
-              const SizedBox(height: 16),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestoreService.db
+            .collection('orders')
+            .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+            .where('status', isEqualTo: 'paid')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+             debugPrint('Dashboard Stream Error: ${snapshot.error}');
+             if (snapshot.error.toString().contains('requires an index')) {
+                return Center(
+                    child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                                const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 48),
+                                const SizedBox(height: 16),
+                                const Text(
+                                    'Đang thiếu Index Firestore cho Dashboard',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                    'Vui lòng tạo Index theo link trong log hoặc hướng dẫn.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                                ),
+                                const SizedBox(height: 24),
+                                FilledButton.tonal(
+                                    onPressed: () => setState(() {}),
+                                    child: const Text('Thử lại'),
+                                ),
+                            ],
+                        ),
+                    ),
+                );
+             }
+             return Center(child: Text('Lỗi: ${snapshot.error}'));
+          }
 
-              // ===== HÀNG THỐNG KÊ: Đơn hàng + Nhân viên =====
-              _buildStatsRow(context),
-              const SizedBox(height: 32),
+          double revenue = 0;
+          int orderCount = 0;
 
-              // ===== ĐIỀU KHIỂN QUẢN LÝ =====
-              _buildManagementControls(context),
-              const SizedBox(height: 24),
+          if (snapshot.hasData) {
+            orderCount = snapshot.data!.docs.length;
+            for (var doc in snapshot.data!.docs) {
+              revenue += (doc.data() as Map<String, dynamic>)['total_amount'] ?? 0.0;
+            }
+          }
 
-            ],
-          ),
-        ),
+          return RefreshIndicator(
+            onRefresh: () async => setState(() {}),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ===== THẺ DOANH THU HÔM NAY =====
+                  _buildRevenueCard(context, revenue),
+                  const SizedBox(height: 16),
+
+                  // ===== HÀNG THỐNG KÊ: Đơn hàng =====
+                  _buildStatsRow(context, orderCount),
+                  const SizedBox(height: 32),
+
+                  // ===== ĐIỀU KHIỂN QUẢN LÝ =====
+                  _buildManagementControls(context),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-
-
-  /// Thẻ doanh thu hôm nay — theo stitch: gradient xanh lá, số lớn
-  Widget _buildRevenueCard(BuildContext context) {
+  Widget _buildRevenueCard(BuildContext context, double revenue) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -119,7 +128,6 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Tiêu đề
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -136,11 +144,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Số tiền lớn
           Text(
-            _formatCurrency(_todayRevenue),
+            _formatCurrency(revenue),
             style: TextStyle(
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: FontWeight.w700,
               color: colorScheme.onPrimary,
               letterSpacing: -1,
@@ -151,10 +158,8 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Hàng thống kê: Đơn hàng và Nhân viên hoạt động
-  Widget _buildStatsRow(BuildContext context) {
+  Widget _buildStatsRow(BuildContext context, int orderCount) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -176,7 +181,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '$_totalOrders',
+            '$orderCount',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -184,11 +189,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          // Thanh tiến trình
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: _totalOrders > 0 ? (_totalOrders / 100).clamp(0, 1) : 0,
+              value: orderCount > 0 ? (orderCount / 100).clamp(0, 1) : 0,
               backgroundColor: colorScheme.surfaceContainerHighest,
               color: colorScheme.primary,
               minHeight: 4,
