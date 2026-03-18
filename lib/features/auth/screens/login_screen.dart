@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/services/auth_service.dart';
 
@@ -23,9 +26,22 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorText;
 
   final AuthService _authService = AuthService();
+  StreamSubscription<User?>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Hỗ trợ flow Google redirect trên web: khi có session thì quay về AuthGate.
+    _authSub = _authService.authStateChanges.listen((user) {
+      if (!mounted || user == null) return;
+      Navigator.pushReplacementNamed(context, '/');
+    });
+  }
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -55,6 +71,48 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       setState(() {
         _errorText = 'Email hoặc mật khẩu không đúng.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submitGoogle() async {
+    setState(() {
+      _errorText = null;
+      _isSubmitting = true;
+    });
+
+    try {
+      final result = await _authService.signInWithGoogle();
+
+      // Web dùng redirect flow: trang sẽ được reload, không cần navigate tại đây.
+      if (result == null) {
+        return;
+      }
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/');
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'aborted-by-user' || e.code == 'popup-closed-by-user') {
+        setState(() {
+          _isSubmitting = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _errorText = 'Không thể đăng nhập Google. Vui lòng thử lại.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorText = 'Không thể đăng nhập Google. Vui lòng thử lại.';
       });
     } finally {
       if (mounted) {
@@ -218,6 +276,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 fontWeight: FontWeight.w700,
                                               ),
                                         ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                height: 52,
+                                child: OutlinedButton.icon(
+                                  onPressed: _isSubmitting ? null : _submitGoogle,
+                                  icon: const Icon(Icons.g_mobiledata, size: 26),
+                                  label: Text(
+                                    'CONTINUE WITH GOOGLE',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(
+                                          letterSpacing: 1,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    side: BorderSide(
+                                      color: colorScheme.outlineVariant,
+                                    ),
+                                    foregroundColor: colorScheme.onSurface,
+                                  ),
                                 ),
                               ),
 
