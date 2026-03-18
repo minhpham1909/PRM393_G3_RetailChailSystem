@@ -8,6 +8,7 @@ import 'features/store_manager/reports/order_detail_screen.dart';
 import 'features/store_manager/inventory/stock_import_request_screen.dart';
 import 'features/store_manager/profile/manager_profile_screen.dart';
 import 'features/store_manager/profile/manager_settings_screen.dart';
+import 'features/admin/profile/admin_profile_screen.dart';
 import 'features/store_manager/inventory/recent_requests_screen.dart';
 import 'features/store_manager/inventory/product_detail_screen.dart';
 import 'features/auth/auth_gate.dart';
@@ -82,6 +83,10 @@ class RCMSApp extends StatelessWidget {
         AppRoutes.admin: (context) => const ProtectedRoute(
               allowedRoles: ['admin'],
               child: AdminPlaceholderScreen(),
+            ),
+        AppRoutes.adminProfile: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: AdminProfileScreen(),
             ),
       },
     );

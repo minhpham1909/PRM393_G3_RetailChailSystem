@@ -67,10 +67,36 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       // Điều hướng về AuthGate để nó check role và redirect tới manager/admin
       Navigator.pushReplacementNamed(context, '/');
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Login failed: ${e.code} - ${e.message}');
+      if (!mounted) return;
+      setState(() {
+        if (e.code == 'invalid-email') {
+          _errorText = 'Email không hợp lệ.';
+        } else if (e.code == 'user-not-found') {
+          _errorText = 'Không tìm thấy tài khoản với email này.';
+        } else if (e.code == 'wrong-password' ||
+            e.code == 'invalid-credential' ||
+            e.code == 'invalid-login-credentials') {
+          _errorText = 'Mật khẩu không đúng.';
+        } else if (e.code == 'user-disabled') {
+          _errorText = 'Tài khoản đã bị vô hiệu hóa.';
+        } else if (e.code == 'operation-not-allowed') {
+          _errorText =
+              'Email/Password chưa được bật trong Firebase Authentication.';
+        } else if (e.code == 'too-many-requests') {
+          _errorText =
+              'Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau vài phút.';
+        } else if (e.code == 'network-request-failed') {
+          _errorText = 'Lỗi mạng. Vui lòng kiểm tra kết nối internet.';
+        } else {
+          _errorText = 'Đăng nhập thất bại (${e.code}).';
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Email hoặc mật khẩu không đúng.';
+        _errorText = 'Đăng nhập thất bại. Vui lòng thử lại.';
       });
     } finally {
       if (mounted) {

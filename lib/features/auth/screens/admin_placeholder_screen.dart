@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_routes.dart';
 import '../../../core/services/auth_service.dart';
 
 /// Placeholder cho Admin (tạm thời)
@@ -25,7 +26,22 @@ class AdminPlaceholderScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Admin module chưa được tích hợp.')),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Admin module chưa được tích hợp.'),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.adminProfile);
+              },
+              icon: const Icon(Icons.person_outline),
+              label: const Text('Hồ sơ cá nhân'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

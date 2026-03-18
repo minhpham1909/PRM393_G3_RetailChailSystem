@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/auth_service.dart';
 
 /// Forgot Password UI theo Stitch
@@ -36,11 +37,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      await _authService.sendPasswordResetEmail(_emailController.text.trim());
+      final email = _emailController.text.trim();
+      await _authService.sendPasswordResetEmail(email);
       if (!mounted) return;
       setState(() {
         _successText =
-            'Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.';
+            'Nếu email tồn tại với đăng nhập bằng mật khẩu, hệ thống đã gửi hướng dẫn đặt lại mật khẩu.';
+      });
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e.code == 'invalid-email') {
+          _errorText = 'Email không hợp lệ.';
+        } else if (e.code == 'user-not-found') {
+          _errorText = 'Không tìm thấy tài khoản với email này.';
+        } else if (e.code == 'too-many-requests') {
+          _errorText =
+              'Bạn thao tác quá nhiều lần. Vui lòng đợi vài phút rồi thử lại.';
+        } else if (e.code == 'unauthorized-continue-uri' ||
+            e.code == 'invalid-continue-uri' ||
+            e.code == 'missing-continue-uri') {
+          _errorText =
+              'Cấu hình reset password trên Firebase chưa đúng (continue URL).';
+        } else if (e.code == 'expired-action-code') {
+          _errorText =
+              'Liên kết đặt lại mật khẩu đã hết hạn. Vui lòng gửi lại yêu cầu mới.';
+        } else {
+          _errorText =
+              'Không thể gửi email reset. Firebase trả về: ${e.code}';
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -200,17 +225,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text('Send Reset Code'),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.arrow_forward,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      ],
+                                  : FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text('Send Reset Code'),
+                                          const SizedBox(width: 8),
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: colorScheme.onPrimary,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                             ),
                           ),
@@ -245,15 +273,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: colorScheme.secondary,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'SECURE AUTHENTICATION',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.4,
-                                fontSize: 10,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                        Flexible(
+                          child: Text(
+                            'SECURE AUTHENTICATION',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.4,
+                                  fontSize: 10,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ),
                       ],
                     ),

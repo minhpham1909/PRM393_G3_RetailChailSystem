@@ -19,6 +19,7 @@ class AppRoutes {
 
   // Admin Routes (thêm sau)
   static const String admin = '/admin';
+  static const String adminProfile = '/admin/profile';
 
   // Staff Routes (thêm sau)
   static const String staff = '/staff';
