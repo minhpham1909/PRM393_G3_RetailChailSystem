@@ -6,7 +6,6 @@ import '../widgets/manager_app_bar.dart';
 
 /// Màn hình Quản lý Tồn kho (Inventory Management)
 /// Hiển thị tổng quan tồn kho, tìm kiếm/lọc sản phẩm, danh sách sản phẩm
-/// Thiết kế theo stitch template: inventory_management
 class InventoryManagementScreen extends StatefulWidget {
   const InventoryManagementScreen({super.key});
 
@@ -61,6 +60,10 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     }
   }
 
+  String _formatCurrency(double amount) {
+    return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")} VND';
+  }
+
   /// Áp dụng bộ lọc theo trạng thái tồn kho
   void _applyFilter() {
     final query = _searchController.text.toLowerCase();
@@ -82,8 +85,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           }).toList();
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +109,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: Column(
                     children: [
-                      // Thẻ 1: Tổng sản phẩm
                       _buildSummaryCard(
                         title: 'Total Items',
                         value: '$totalItems',
@@ -117,7 +117,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                         textColor: colorScheme.onSurface,
                       ),
                       const SizedBox(height: 12),
-                      // Thẻ 2: Cảnh báo tồn kho thấp (xanh lá)
                       _buildSummaryCard(
                         title: 'Low Stock Alerts',
                         value: '$lowStockCount',
@@ -126,7 +125,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                         textColor: colorScheme.onSecondaryContainer,
                       ),
                       const SizedBox(height: 12),
-                      // Thẻ 3: Yêu cầu đang chờ
                       _buildSummaryCard(
                         title: 'Pending Requests',
                         value: '0',
@@ -135,7 +133,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                         textColor: colorScheme.onSurface,
                       ),
                       const SizedBox(height: 16),
-                      // Nút xem Recent Requests
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -192,7 +189,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                 ),
               ),
 
-              // ===== TIÊU ĐỀ DANH SÁCH =====
+              // ===== DANH SÁCH SẢN PHẨM =====
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -205,7 +202,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                 ),
               ),
 
-              // ===== DANH SÁCH SẢN PHẨM =====
               _isLoading
                   ? const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
@@ -213,25 +209,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                   : _filteredProducts.isEmpty
                   ? SliverFillRemaining(
                     child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.inventory_2_outlined,
-                            size: 64,
-                            color: colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No products found',
-                            style: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: Text('No products found', style: TextStyle(color: colorScheme.onSurfaceVariant)),
                     ),
                   )
                   : SliverPadding(
@@ -248,10 +226,8 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           ),
         ),
       ),
-      // Nút FAB thêm sản phẩm / tạo yêu cầu nhập hàng
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Chuyển đến màn hình Stock Import Request
           Navigator.pushNamed(context, AppRoutes.stockImportRequest);
         },
         child: const Icon(Icons.add),
@@ -259,7 +235,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  /// Widget thẻ tóm tắt — theo stitch: card với giá trị lớn + icon
   Widget _buildSummaryCard({
     required String title,
     required String value,
@@ -283,7 +258,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: textColor.withValues(alpha: 0.7),
+              color: textColor.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -293,13 +268,13 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: 32,
                   fontWeight: FontWeight.w700,
                   color: textColor,
                   height: 1,
                 ),
               ),
-              Icon(icon, color: textColor.withValues(alpha: 0.6), size: 24),
+              Icon(icon, color: textColor.withOpacity(0.6), size: 24),
             ],
           ),
         ],
@@ -307,7 +282,6 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  /// Widget chip bộ lọc — theo stitch: rounded-full, active = filled
   Widget _buildFilterChip(String label) {
     final colorScheme = Theme.of(context).colorScheme;
     final isActive = _activeFilter == label;
@@ -335,169 +309,109 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  /// Widget hiển thị một sản phẩm — theo stitch: ảnh, tên, badge, stock, action
   Widget _buildProductItem(ProductModel product) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    // Chọn màu badge theo trạng thái tồn kho
-    Color badgeBg;
+    Color badgeColor;
     Color badgeText;
+    
     switch (product.stockStatus) {
       case 'Critical':
-        badgeBg = colorScheme.errorContainer;
+        badgeColor = colorScheme.errorContainer;
         badgeText = colorScheme.onErrorContainer;
         break;
       case 'Low Stock':
-        badgeBg = colorScheme.secondaryContainer;
+        badgeColor = colorScheme.secondaryContainer;
         badgeText = colorScheme.onSecondaryContainer;
         break;
       case 'Out of Stock':
-        badgeBg = colorScheme.errorContainer;
+        badgeColor = colorScheme.errorContainer;
         badgeText = colorScheme.error;
         break;
       default:
-        badgeBg = colorScheme.surfaceContainerHighest;
+        badgeColor = colorScheme.surfaceContainerHighest;
         badgeText = colorScheme.onSurfaceVariant;
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          // Ảnh sản phẩm
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child:
-                product.image != null && product.image!.isNotEmpty
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.productDetail,
+            arguments: product,
+          ).then((_) => _loadProducts());
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: product.image != null && product.image!.isNotEmpty
                     ? ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        product.image!,
-                        fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.image_outlined,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                      ),
+                      child: Image.network(product.image!, fit: BoxFit.cover),
                     )
-                    : Icon(
-                      Icons.inventory_2,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-          ),
-          const SizedBox(width: 12),
-          // Thông tin sản phẩm
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Hàng 1: Tên + Badge
-                Row(
+                    : const Icon(Icons.inventory_2),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            product.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatCurrency(product.price),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary, fontSize: 14),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    // Badge trạng thái
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: badgeBg,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        product.stockStatus.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: badgeText,
-                          letterSpacing: 0.5,
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            product.stockStatus.toUpperCase(),
+                            style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: badgeText),
+                          ),
                         ),
-                      ),
+                        Text(
+                          'Stock: ${product.stock} units',
+                          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                // Hàng 2: Stock + Action
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Số lượng tồn kho
-                    RichText(
-                      text: TextSpan(
-                        text: 'Stock: ',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: '${product.stock}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color:
-                                  product.stockStatus == 'Critical'
-                                      ? colorScheme.error
-                                      : colorScheme.onSurface,
-                            ),
-                          ),
-                          const TextSpan(text: ' units'),
-                        ],
-                      ),
-                    ),
-                    // Nút yêu cầu nhập hàng
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.stockImportRequest,
-                          arguments: product,
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Request Stock',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 16,
-                            color: colorScheme.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

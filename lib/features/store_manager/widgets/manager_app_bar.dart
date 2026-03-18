@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/services/firestore_service.dart';
 
@@ -19,6 +20,7 @@ class ManagerAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _ManagerAppBarState extends State<ManagerAppBar> {
   final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   String _managerName = 'Loading...';
   String _storeName = 'Loading...';
 
@@ -30,10 +32,20 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
 
   Future<void> _loadProfileData() async {
     try {
-      // Fetch the first store manager for demo purposes
+      final email = _auth.currentUser?.email;
+      if (email == null || email.trim().isEmpty) {
+        if (mounted) {
+          setState(() {
+            _managerName = 'Store Manager';
+            _storeName = 'No Account';
+          });
+        }
+        return;
+      }
+
       final usersSnapshot = await _firestoreService.db
           .collection('users')
-          .where('role', isEqualTo: 'store_manager')
+          .where('email', isEqualTo: email)
           .limit(1)
           .get();
 

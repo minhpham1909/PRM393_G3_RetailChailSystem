@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/order_model.dart';
 import '../widgets/manager_app_bar.dart';
@@ -14,6 +15,7 @@ class PosCheckoutScreen extends StatefulWidget {
 
 class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final List<SelectedProduct> _selectedProducts = [];
   String _paymentMethod = 'Cash';
   bool _isProcessing = false;
@@ -30,9 +32,14 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 
   Future<void> _loadProfileInfo() async {
     try {
+      final email = _auth.currentUser?.email;
+      if (email == null || email.trim().isEmpty) {
+        return;
+      }
+
       final usersSnapshot = await _firestoreService.db
           .collection('users')
-          .where('role', isEqualTo: 'store_manager')
+          .where('email', isEqualTo: email)
           .limit(1)
           .get();
 

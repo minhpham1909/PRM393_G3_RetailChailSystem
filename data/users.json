@@ -81,6 +81,16 @@
       "phone": "0912000004",
       "store_id": "STORE_004",
       "created_at": "2024-04-05T08:00:00Z"
+    },
+    {
+      "account_id": "MGR_005",
+      "email": "sang07626@gmail.com",
+      "password_hash": "hashed_Manager@123",
+      "full_name": "Nguyen Viet Sang",
+      "role": "store_manager",
+      "phone": "0912000005",
+      "store_id": "STORE_005",
+      "created_at": "2024-04-05T08:00:00Z"
     }
   ]
 }
