@@ -17,9 +17,6 @@ class ManagerMainScreen extends StatefulWidget {
 class _ManagerMainScreenState extends State<ManagerMainScreen> {
   /// Tab hiện tại đang được chọn
   int _currentIndex = 0;
-
-
-
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [

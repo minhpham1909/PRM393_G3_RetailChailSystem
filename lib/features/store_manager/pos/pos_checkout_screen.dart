@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/models/product_model.dart';
 import '../../../core/models/order_model.dart';
+import '../../../core/services/printing_service.dart';
 import '../widgets/manager_app_bar.dart';
 import '../widgets/product_selection_modal.dart';
 
@@ -18,6 +22,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   String _paymentMethod = 'Cash';
   bool _isProcessing = false;
 
+  StreamSubscription? _userSubscription;
+
   // Profile info for order
   String? _managerId;
   String? _storeId;
@@ -25,32 +31,60 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfileInfo();
+    _listenToProfileInfo();
   }
 
-  Future<void> _loadProfileInfo() async {
-    try {
-      final usersSnapshot = await _firestoreService.db
-          .collection('users')
-          .where('role', isEqualTo: 'store_manager')
-          .limit(1)
-          .get();
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
 
-      if (usersSnapshot.docs.isNotEmpty) {
-        final userData = usersSnapshot.docs.first.data();
-        if (mounted) {
-          setState(() {
-            _managerId = usersSnapshot.docs.first.id;
-            _storeId = userData['store_id'];
-          });
-        }
+  /// Lắng nghe thông tin của người dùng đang đăng nhập để lấy managerId và storeId
+  /// Dữ liệu sẽ tự động cập nhật nếu có thay đổi trên server.
+  void _listenToProfileInfo() {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        debugPrint('Lỗi POS: Không có người dùng nào được xác thực.');
+        // Có thể hiển thị lỗi cho người dùng ở đây nếu cần
+        return;
       }
+
+      // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
+      // Seeder hiện tại tạo Auth user với UID tự động, nhưng Firestore doc lại dùng ID tùy chỉnh.
+      _userSubscription = _firestoreService.db
+          .collection('users')
+          .where('email', isEqualTo: currentUser.email)
+          .limit(1)
+          .snapshots()
+          .listen((querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          final userDoc = querySnapshot.docs.first;
+          final userData = userDoc.data() as Map<String, dynamic>?;
+          if (mounted && userData != null && userData['role'] == 'store_manager') {
+            // Chỉ cập nhật state nếu dữ liệu thực sự thay đổi
+            if (_managerId != userDoc.id || _storeId != userData['store_id']) {
+              setState(() {
+                _managerId = userDoc.id;
+                _storeId = userData['store_id'];
+              });
+            }
+          }
+        } else {
+          // Xử lý trường hợp không tìm thấy user doc
+          debugPrint('Lỗi POS: Không tìm thấy thông tin người dùng trong Firestore.');
+          if (mounted) setState(() { _managerId = null; _storeId = null; });
+        }
+      }, onError: (e) {
+        debugPrint('Lỗi lắng nghe thông tin quản lý cho POS: $e');
+        if (mounted) setState(() { _managerId = null; _storeId = null; });
+      });
     } catch (e) {
-      debugPrint('Lỗi tải thông tin quản lý cho POS: $e');
+      debugPrint('Lỗi thiết lập lắng nghe thông tin quản lý: $e');
     }
   }
-
-  double get _subtotal => _selectedProducts.fold(0.0, (sum, p) => sum + (p.product.price * p.quantity));
+  double get _total => _selectedProducts.fold(0.0, (sum, p) => sum + (p.product.price * p.quantity));
 
   String _formatCurrency(double amount) {
     return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} VND';
@@ -76,35 +110,50 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     try {
       final now = DateTime.now();
       final orderRef = _firestoreService.db.collection('orders').doc();
+
+      late OrderModel createdOrder;
       
+      // Lấy thông tin chi tiết sản phẩm để dùng sau khi thanh toán thành công
+      // Điều này đảm bảo chúng ta có thông tin chính xác tại thời điểm thanh toán
+      final productDetailsForReceipt = {
+        for (var p in _selectedProducts) p.product.productId: p.product
+      };
+
       // Run Transaction to ensure stock is updated atomically
       await _firestoreService.db.runTransaction((transaction) async {
-        // 1. Check stock for all items
-        for (var sp in _selectedProducts) {
+        // 1. Đọc và kiểm tra tồn kho cho từng sản phẩm một cách tuần tự.
+        // Việc này kém hiệu quả hơn so với đọc song song (Future.wait),
+        // nhưng nó giúp tránh các lỗi tiềm ẩn trong các phiên bản cũ của plugin Firestore
+        // khi xử lý nhiều thao tác đọc đồng thời trong một giao dịch.
+        for (final sp in _selectedProducts) {
           final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
           final productDoc = await transaction.get(productRef);
-          
+
           if (!productDoc.exists) {
             throw Exception('Sản phẩm ${sp.product.name} không tồn tại');
           }
+
+          final stockData = productDoc.data()?['stock'];
+          int currentStock = 0;
+          if (stockData is num) {
+            currentStock = stockData.toInt();
+          }
           
-          final currentStock = (productDoc.data()?['stock'] ?? 0).toInt();
           if (currentStock < sp.quantity) {
             throw Exception('Sản phẩm ${sp.product.name} không đủ tồn kho (Còn: $currentStock)');
           }
         }
 
-        // 2. Decrement stock
+        // 2. Nếu tất cả kiểm tra đều qua, giảm số lượng tồn kho cho tất cả sản phẩm
         for (var sp in _selectedProducts) {
           final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
           transaction.update(productRef, {
-            'stock_quantity': FieldValue.increment(-sp.quantity),
+            'stock': FieldValue.increment(-sp.quantity),
           });
         }
 
-        // 3. Create Order document
+        // 3. Tạo tài liệu Order
         final orderItems = _selectedProducts.map((sp) => OrderDetailModel(
-          orderDetailId: '', // Will be stored in the items array map
           orderId: orderRef.id,
           productId: sp.product.productId,
           quantity: sp.quantity,
@@ -115,7 +164,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           orderId: orderRef.id,
           managerId: _managerId!,
           storeId: _storeId!,
-          totalAmount: _subtotal,
+          totalAmount: _total,
           paymentMethod: _paymentMethod,
           createdAt: now,
           orderType: 'sale',
@@ -123,19 +172,33 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           items: orderItems,
         );
 
+        createdOrder = order;
         transaction.set(orderRef, order.toFirestore());
       });
 
       if (mounted) {
-        _showSuccessDialog();
+        await _showSuccessDialog(createdOrder, productDetailsForReceipt);
         setState(() {
           _selectedProducts.clear();
         });
       }
-    } catch (e) {
+    } catch (e, s) {
       if (mounted) {
+        // In lỗi chi tiết ra console để debug
+        debugPrint('Lỗi thanh toán: $e');
+        debugPrint('Stack trace: $s');
+
+        // Tạo thông báo lỗi thân thiện với người dùng
+        String errorMessage = e.toString();
+        if (e is FirebaseException) {
+          errorMessage = e.message ?? 'Lỗi không xác định từ Firebase.';
+        } else if (e is Exception) {
+          errorMessage = e.toString().replaceFirst('Exception: ', '');
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ Lỗi thanh toán: ${e.toString()}')),
+          SnackBar(content: Text('❌ Lỗi thanh toán: $errorMessage'),
+          backgroundColor: Theme.of(context).colorScheme.error),
         );
       }
     } finally {
@@ -143,9 +206,11 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
+  Future<void> _showSuccessDialog(
+      OrderModel order, Map<String, ProductModel> productDetails) async {
+    await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Thanh toán thành công!'),
         content: Column(
@@ -153,10 +218,20 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 64),
             const SizedBox(height: 16),
-            Text('Đơn hàng đã được ghi nhận và kho đã được cập nhật.', textAlign: TextAlign.center),
+            const Text('Đơn hàng đã được ghi nhận và kho đã được cập nhật.',
+                textAlign: TextAlign.center),
           ],
         ),
         actions: [
+          OutlinedButton(
+            onPressed: () {
+              PrintingService().printReceipt(
+                order: order,
+                productDetails: productDetails,
+              );
+            },
+            child: const Text('In hóa đơn'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
@@ -250,7 +325,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   children: [
                     const Text('Total Amount', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     Text(
-                      _formatCurrency(_subtotal),
+                      _formatCurrency(_total),
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary),
                     ),
                   ],
@@ -305,7 +380,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('${_formatCurrency(item.product.price)} each', style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)),
+                Text('${_formatCurrency(item.product.price)} ', style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
@@ -327,7 +402,14 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               IconButton(
                 icon: const Icon(Icons.add_circle_outline, size: 20),
                 onPressed: () {
-                  setState(() => item.quantity++);
+                  setState(() {
+                    // Kiểm tra số lượng tồn kho trước khi tăng
+                    if (item.quantity + 1 <= item.product.stock) {
+                      item.quantity++;
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sản phẩm ${item.product.name} chỉ còn ${item.product.stock} sản phẩm.')));
+                    }
+                  });
                 },
               ),
             ],
@@ -388,14 +470,21 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Future<void> _showProductSelectionModal(BuildContext context) async {
-    final result = await showModalBottomSheet<List<SelectedProduct>>(
+    final result = await showDialog<List<SelectedProduct>>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ProductSelectionModal(
-        initialSelected: _selectedProducts,
-        actionLabel: 'Add to Cart',
-      ),
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.all(20), // Thêm khoảng cách từ các cạnh màn hình
+          child: ConstrainedBox( // Giới hạn chiều cao của nội dung dialog
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+            child: ProductSelectionModal(
+              initialSelected: _selectedProducts,
+              actionLabel: 'Add to Cart',
+            ),
+          ),
+        );
+      },
     );
 
     if (result != null) {

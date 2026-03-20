@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 
 /// Màn hình Dashboard của Store Manager
@@ -18,6 +20,11 @@ class ManagerDashboardScreen extends StatefulWidget {
 
 class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  StreamSubscription? _userSubscription;
+  StreamSubscription? _ordersSubscription;
+
+  // ID cửa hàng của manager hiện tại
+  String? _storeId;
 
   // Dữ liệu thống kê
   double _todayRevenue = 0;
@@ -30,39 +37,68 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    _listenToProfileAndDashboardData();
   }
 
-  /// Tải dữ liệu thống kê cho dashboard
-  Future<void> _loadDashboardData() async {
-    try {
-      // Lấy tổng doanh thu hôm nay từ collection 'orders'
-      final today = DateTime.now();
-      final startOfDay = DateTime(today.year, today.month, today.day);
-      final ordersSnapshot =
-          await _firestoreService.db
-              .collection('orders')
-              .where(
-                'created_at',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
-              )
-              .where('status', isEqualTo: 'paid')
-              .get();
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    _ordersSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Lắng nghe thông tin người dùng để lấy storeId, sau đó lắng nghe dữ liệu dashboard.
+  void _listenToProfileAndDashboardData() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
+    _userSubscription = _firestoreService.db.collection('users')
+      .where('email', isEqualTo: currentUser.email)
+      .limit(1)
+      .snapshots().listen((querySnapshot) {
+      if (querySnapshot.docs.isEmpty || !mounted) return;
+      
+      final userDoc = querySnapshot.docs.first;
+      final newStoreId = userDoc.data()?['store_id'];
+      
+      // Chỉ đăng ký lại stream dashboard nếu storeId thay đổi
+      if (newStoreId != null && newStoreId != _storeId) {
+        _storeId = newStoreId;
+        _listenToDashboardData(newStoreId);
+      }
+    });
+  }
+
+  /// Lắng nghe dữ liệu đơn hàng trong ngày của cửa hàng để cập nhật dashboard real-time.
+  void _listenToDashboardData(String storeId) {
+    // Hủy subscription cũ trước khi tạo mới
+    _ordersSubscription?.cancel();
+
+    final today = DateTime.now();
+    final startOfDay = DateTime(today.year, today.month, today.day);
+
+    final query = _firestoreService.db
+        .collection('orders')
+        .where('store_id', isEqualTo: storeId)
+        .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where('status', isEqualTo: 'paid');
+
+    _ordersSubscription = query.snapshots().listen((snapshot) {
+      if (!mounted) return;
 
       double revenue = 0;
-      for (var doc in ordersSnapshot.docs) {
+      for (var doc in snapshot.docs) {
         revenue += (doc.data()['total_amount'] ?? 0).toDouble();
       }
 
-      if (mounted) {
-        setState(() {
-          _todayRevenue = revenue;
-          _totalOrders = ordersSnapshot.docs.length;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        _todayRevenue = revenue;
+        _totalOrders = snapshot.docs.length;
+      });
+    }, onError: (e) {
       debugPrint('Lỗi tải dữ liệu dashboard: $e');
-    }
+    });
   }
 
   @override
@@ -73,7 +109,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       backgroundColor: colorScheme.surface,
       appBar: const ManagerAppBar(),
       body: RefreshIndicator(
-        onRefresh: _loadDashboardData,
+        // Stream đã tự cập nhật, onRefresh chỉ để người dùng có cảm giác control.
+        // Có thể thêm logic fetch lại 1 lần ở đây nếu muốn.
+        onRefresh: () async {},
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
