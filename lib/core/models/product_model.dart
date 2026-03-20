@@ -10,6 +10,7 @@ class ProductModel {
   final double price;
   final String? image;
   final int stock;
+  final String description;
 
   ProductModel({
     required this.productId,
@@ -19,6 +20,7 @@ class ProductModel {
     required this.price,
     this.image,
     required this.stock,
+    this.description = '',
   });
 
   /// Chuyển đổi từ Firestore document sang ProductModel
@@ -32,6 +34,7 @@ class ProductModel {
       price: (data['price'] ?? 0).toDouble(),
       image: data['image'],
       stock: (data['stock'] ?? 0).toInt(),
+      description: data['description'] ?? '',
     );
   }
 
@@ -44,6 +47,7 @@ class ProductModel {
       'price': price,
       'image': image,
       'stock': stock,
+      'description': description,
     };
   }
 
@@ -64,6 +68,7 @@ class ProductModel {
     double? price,
     String? image,
     int? stock,
+    String? description,
   }) {
     return ProductModel(
       productId: productId ?? this.productId,
@@ -73,6 +78,7 @@ class ProductModel {
       price: price ?? this.price,
       image: image ?? this.image,
       stock: stock ?? this.stock,
+      description: description ?? this.description,
     );
   }
 }

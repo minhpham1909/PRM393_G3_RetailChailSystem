@@ -53,21 +53,23 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     if (currentUser == null) return;
 
     // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
-    _userSubscription = _firestoreService.db.collection('users')
-      .where('email', isEqualTo: currentUser.email)
-      .limit(1)
-      .snapshots().listen((querySnapshot) {
-      if (querySnapshot.docs.isEmpty || !mounted) return;
-      
-      final userDoc = querySnapshot.docs.first;
-      final newStoreId = userDoc.data()?['store_id'];
-      
-      // Chỉ đăng ký lại stream dashboard nếu storeId thay đổi
-      if (newStoreId != null && newStoreId != _storeId) {
-        _storeId = newStoreId;
-        _listenToDashboardData(newStoreId);
-      }
-    });
+    _userSubscription = _firestoreService.db
+        .collection('users')
+        .where('email', isEqualTo: currentUser.email)
+        .limit(1)
+        .snapshots()
+        .listen((querySnapshot) {
+          if (querySnapshot.docs.isEmpty || !mounted) return;
+
+          final userDoc = querySnapshot.docs.first;
+          final newStoreId = userDoc.data()?['store_id'];
+
+          // Chỉ đăng ký lại stream dashboard nếu storeId thay đổi
+          if (newStoreId != null && newStoreId != _storeId) {
+            _storeId = newStoreId;
+            _listenToDashboardData(newStoreId);
+          }
+        });
   }
 
   /// Lắng nghe dữ liệu đơn hàng trong ngày của cửa hàng để cập nhật dashboard real-time.
@@ -81,24 +83,30 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     final query = _firestoreService.db
         .collection('orders')
         .where('store_id', isEqualTo: storeId)
-        .where('created_at', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where(
+          'created_at',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
         .where('status', isEqualTo: 'paid');
 
-    _ordersSubscription = query.snapshots().listen((snapshot) {
-      if (!mounted) return;
+    _ordersSubscription = query.snapshots().listen(
+      (snapshot) {
+        if (!mounted) return;
 
-      double revenue = 0;
-      for (var doc in snapshot.docs) {
-        revenue += (doc.data()['total_amount'] ?? 0).toDouble();
-      }
+        double revenue = 0;
+        for (var doc in snapshot.docs) {
+          revenue += (doc.data()['total_amount'] ?? 0).toDouble();
+        }
 
-      setState(() {
-        _todayRevenue = revenue;
-        _totalOrders = snapshot.docs.length;
-      });
-    }, onError: (e) {
-      debugPrint('Lỗi tải dữ liệu dashboard: $e');
-    });
+        setState(() {
+          _todayRevenue = revenue;
+          _totalOrders = snapshot.docs.length;
+        });
+      },
+      onError: (e) {
+        debugPrint('Lỗi tải dữ liệu dashboard: $e');
+      },
+    );
   }
 
   @override
@@ -129,15 +137,12 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               // ===== ĐIỀU KHIỂN QUẢN LÝ =====
               _buildManagementControls(context),
               const SizedBox(height: 24),
-
             ],
           ),
         ),
       ),
     );
   }
-
-
 
   /// Thẻ doanh thu hôm nay — theo stitch: gradient xanh lá, số lớn
   Widget _buildRevenueCard(BuildContext context) {
@@ -148,7 +153,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.primary.withValues(alpha: 0.8)],
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withValues(alpha: 0.8),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -344,5 +352,4 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       ),
     );
   }
-
 }

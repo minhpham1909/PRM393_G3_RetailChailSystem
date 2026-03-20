@@ -62,7 +62,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   String _formatCurrency(double amount) {
-    return NumberFormat.currency(locale: 'vi_VN', symbol: 'VND', decimalDigits: 0).format(amount);
+    return NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'VND',
+      decimalDigits: 0,
+    ).format(amount);
   }
 
   @override
@@ -76,12 +80,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            onPressed: _isLoading ? null : () {
-              _printingService.printReceipt(
-                order: widget.order,
-                productDetails: _productDetails,
-              );
-            },
+            onPressed: _isLoading
+                ? null
+                : () {
+                    _printingService.printReceipt(
+                      order: widget.order,
+                      productDetails: _productDetails,
+                    );
+                  },
           ),
         ],
       ),
@@ -94,7 +100,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 children: [
                   _buildHeaderCard(colorScheme),
                   const SizedBox(height: 24),
-                  Text('Items (${widget.order.items.length})', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Items (${widget.order.items.length})',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   _buildItemsList(colorScheme),
                   const Divider(height: 32),
@@ -121,7 +132,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             children: [
               Text(
                 'Invoice #${widget.order.orderId.substring(widget.order.orderId.length - 6).toUpperCase()}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -131,15 +145,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 child: Text(
                   widget.order.status.toUpperCase(),
-                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10),
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _buildInfoRow(Icons.calendar_today_outlined, 'Date', DateFormat('dd/MM/yyyy, HH:mm').format(widget.order.createdAt)),
+          _buildInfoRow(
+            Icons.calendar_today_outlined,
+            'Date',
+            DateFormat('dd/MM/yyyy, HH:mm').format(widget.order.createdAt),
+          ),
           const SizedBox(height: 8),
-          _buildInfoRow(Icons.payment_outlined, 'Payment', widget.order.paymentMethod),
+          _buildInfoRow(
+            Icons.payment_outlined,
+            'Payment',
+            widget.order.paymentMethod,
+          ),
         ],
       ),
     );
@@ -148,9 +174,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(
+          icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 8),
-        Text('$label: ', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
@@ -166,15 +201,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: widget.order.items.length,
-        separatorBuilder: (context, index) => Divider(height: 1, indent: 16, endIndent: 16, color: colorScheme.outlineVariant.withOpacity(0.2)),
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          indent: 16,
+          endIndent: 16,
+          color: colorScheme.outlineVariant.withOpacity(0.2),
+        ),
         itemBuilder: (context, index) {
           final item = widget.order.items[index];
           final product = _productDetails[item.productId];
           final productName = product?.name ?? 'Loading...';
 
           return ListTile(
-            title: Text(productName, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text('${item.quantity} x ${_formatCurrency(item.unitPrice)}'),
+            title: Text(
+              productName,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              '${item.quantity} x ${_formatCurrency(item.unitPrice)}',
+            ),
             trailing: Text(
               _formatCurrency(item.lineTotal),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -188,7 +233,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildTotals() {
     return Column(
       children: [
-        _buildTotalRow('Total', _formatCurrency(widget.order.totalAmount), isTotal: true),
+        _buildTotalRow(
+          'Total',
+          _formatCurrency(widget.order.totalAmount),
+          isTotal: true,
+        ),
       ],
     );
   }
@@ -197,11 +246,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final style = isTotal
         ? const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
         : const TextStyle(fontSize: 16);
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: style.copyWith(color: isTotal ? null : Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(
+          title,
+          style: style.copyWith(
+            color: isTotal
+                ? null
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         Text(value, style: style),
       ],
     );

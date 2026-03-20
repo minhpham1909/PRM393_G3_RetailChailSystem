@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/models/order_model.dart';
@@ -18,6 +19,7 @@ class PosCheckoutScreen extends StatefulWidget {
 
 class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final List<SelectedProduct> _selectedProducts = [];
   String _paymentMethod = 'Cash';
   bool _isProcessing = false;

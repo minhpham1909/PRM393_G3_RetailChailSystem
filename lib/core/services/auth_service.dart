@@ -1,9 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// Dịch vụ xác thực người dùng (dùng chung cho tất cả actor)
 /// Quản lý đăng nhập, đăng xuất, và thông tin người dùng hiện tại
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  GoogleSignIn? _googleSignIn;
+
+  GoogleSignIn get _googleSignInInstance {
+    _googleSignIn ??= GoogleSignIn();
+    return _googleSignIn!;
+  }
 
   /// Lấy người dùng hiện tại (null nếu chưa đăng nhập)
   User? get currentUser => _auth.currentUser;
@@ -25,8 +33,39 @@ class AuthService {
     );
   }
 
+  /// Đăng nhập bằng Google
+  /// Đăng nhập bằng Google
+  Future<UserCredential?> signInWithGoogle() async {
+    if (kIsWeb) {
+      final provider = GoogleAuthProvider();
+      // Đổi từ signInWithRedirect sang signInWithPopup
+      // Hàm này sẽ mở popup và trả về credential sau khi user đăng nhập xong
+      return await _auth.signInWithPopup(provider); 
+    }
+
+    // Luồng cho Mobile giữ nguyên
+    final googleUser = await _googleSignInInstance.signIn();
+    if (googleUser == null) {
+      throw FirebaseAuthException(
+        code: 'aborted-by-user',
+        message: 'Google sign-in was cancelled by user.',
+      );
+    }
+
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    return await _auth.signInWithCredential(credential);
+  }
+
   /// Đăng xuất
   Future<void> signOut() async {
+    if (!kIsWeb && _googleSignIn != null) {
+      await _googleSignInInstance.signOut();
+    }
     await _auth.signOut();
   }
 

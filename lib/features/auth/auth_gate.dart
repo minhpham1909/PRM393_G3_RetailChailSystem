@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../../core/constants/app_routes.dart';
 import '../../core/models/user_model.dart';
 import '../../core/services/firestore_service.dart';
@@ -61,6 +64,20 @@ class _AuthGateState extends State<AuthGate> {
           .get();
 
       if (snap.docs.isEmpty) {
+        final localRole = await _findLocalRoleByEmail(user.email);
+        if (!mounted) return;
+
+        if (localRole == 'admin') {
+          Navigator.pushReplacementNamed(context, AppRoutes.admin);
+          return;
+        }
+
+        if (localRole == 'store_manager') {
+          Navigator.pushReplacementNamed(context, AppRoutes.manager);
+          return;
+        }
+
+        await _auth.signOut();
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, AppRoutes.login);
         return;
@@ -75,9 +92,34 @@ class _AuthGateState extends State<AuthGate> {
         Navigator.pushReplacementNamed(context, AppRoutes.manager);
       }
     } catch (_) {
+      await _auth.signOut();
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
+  }
+
+  Future<String?> _findLocalRoleByEmail(String? email) async {
+    if (email == null || email.trim().isEmpty) return null;
+
+    try {
+      final normalizedEmail = email.trim().toLowerCase();
+      final jsonString = await rootBundle.loadString('data/users.json');
+      final Map<String, dynamic> jsonData =
+          jsonDecode(jsonString) as Map<String, dynamic>;
+      final List<dynamic> users = jsonData['users'] as List<dynamic>? ?? [];
+
+      for (final user in users) {
+        if (user is! Map<String, dynamic>) continue;
+        final localEmail = (user['email'] as String? ?? '').trim().toLowerCase();
+        if (localEmail == normalizedEmail) {
+          return user['role'] as String?;
+        }
+      }
+    } catch (_) {
+      return null;
+    }
+
+    return null;
   }
 
   @override
