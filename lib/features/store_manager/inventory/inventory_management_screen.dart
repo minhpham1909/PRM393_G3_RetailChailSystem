@@ -20,6 +20,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   // Product list
   List<ProductModel> _products = [];
   List<ProductModel> _filteredProducts = [];
+  int _pendingRequestsCount = 0;
   bool _isLoading = true;
 
   // Current filters
@@ -29,7 +30,10 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    // Use addPostFrameCallback to avoid calling setState during initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadData();
+    });
   }
 
   @override
@@ -38,25 +42,58 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     super.dispose();
   }
 
+  Future<void> _loadData() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
+    try {
+      await Future.wait([
+        _loadProducts(),
+        _loadPendingRequestsCount(),
+      ]);
+    } catch (e) {
+      debugPrint('Error in _loadData: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   /// Load products from Firestore.
   Future<void> _loadProducts() async {
     try {
       final snapshot = await _firestoreService.getCollection('products');
-      final products =
-          snapshot.docs
-              .map((doc) => ProductModel.fromFirestore(doc))
-              .toList();
+      final products = snapshot.docs
+          .map((doc) => ProductModel.fromFirestore(doc))
+          .toList();
 
       if (mounted) {
         setState(() {
           _products = products;
           _applyFilter();
-          _isLoading = false;
         });
       }
     } catch (e) {
       debugPrint('Failed to load products: $e');
-      if (mounted) setState(() => _isLoading = false);
+      rethrow;
+    }
+  }
+
+  /// Load the count of pending stock requests.
+  Future<void> _loadPendingRequestsCount() async {
+    try {
+      final snapshot = await _firestoreService.db
+          .collection('stock_requests')
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      if (mounted) {
+        setState(() {
+          _pendingRequestsCount = snapshot.docs.length;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load pending requests count: $e');
+      rethrow;
     }
   }
 
@@ -68,22 +105,24 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   void _applyFilter() {
     final query = _searchController.text.toLowerCase();
 
-    setState(() {
-      _filteredProducts =
-          _products.where((p) {
-          // Keyword filter
-            final matchesSearch =
-                query.isEmpty ||
-                p.name.toLowerCase().contains(query) ||
-                p.sku.toLowerCase().contains(query);
+    final filtered = _products.where((p) {
+      // Keyword filter
+      final matchesSearch = query.isEmpty ||
+          p.name.toLowerCase().contains(query) ||
+          p.sku.toLowerCase().contains(query);
 
-          // Stock-status filter
-            final matchesFilter =
-                _activeFilter == 'All' || p.stockStatus == _activeFilter;
+      // Stock-status filter
+      final matchesFilter =
+          _activeFilter == 'All' || p.stockStatus == _activeFilter;
 
-            return matchesSearch && matchesFilter;
-          }).toList();
-    });
+      return matchesSearch && matchesFilter;
+    }).toList();
+
+    if (mounted) {
+      setState(() {
+        _filteredProducts = filtered;
+      });
+    }
   }
 
   @override
@@ -100,7 +139,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       appBar: const ManagerAppBar(),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _loadProducts,
+          onRefresh: _loadData,
           child: CustomScrollView(
             slivers: [
               // ===== SUMMARY CARDS =====
@@ -127,7 +166,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                       const SizedBox(height: 12),
                       _buildSummaryCard(
                         title: 'Pending Requests',
-                        value: '0',
+                        value: '$_pendingRequestsCount',
                         icon: Icons.pending_actions,
                         backgroundColor: colorScheme.surfaceContainerLow,
                         textColor: colorScheme.onSurface,
@@ -137,7 +176,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                         width: double.infinity,
                         height: 48,
                         child: FilledButton.tonalIcon(
-                          onPressed: () => Navigator.pushNamed(context, AppRoutes.recentRequests),
+                          onPressed: () => Navigator.pushNamed(context, AppRoutes.recentRequests).then((_) => _loadData()),
                           icon: const Icon(Icons.history),
                           label: const Text('View Recent Requests', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
@@ -228,7 +267,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.stockImportRequest);
+          Navigator.pushNamed(context, AppRoutes.stockImportRequest).then((_) => _loadData());
         },
         child: const Icon(Icons.add),
       ),

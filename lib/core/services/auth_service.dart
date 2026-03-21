@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -77,5 +78,25 @@ class AuthService {
       email: email,
       password: password,
     );
+  }
+
+  /// Tạo tài khoản mới nhưng KHÔNG đăng nhập (Dùng Secondary FirebaseApp)
+  Future<String?> createAccountWithoutLogin(String email, String password) async {
+    try {
+      FirebaseApp secondaryApp = await Firebase.initializeApp(
+        name: 'SecondaryApp_${DateTime.now().millisecondsSinceEpoch}',
+        options: Firebase.app().options,
+      );
+
+      UserCredential userCredential = await FirebaseAuth.instanceFor(app: secondaryApp)
+          .createUserWithEmailAndPassword(email: email, password: password);
+      
+      final uid = userCredential.user?.uid;
+      
+      await secondaryApp.delete();
+      return uid;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

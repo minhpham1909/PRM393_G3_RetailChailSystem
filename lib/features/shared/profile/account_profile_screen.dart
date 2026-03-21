@@ -536,18 +536,6 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
               ),
               child: Icon(Icons.person, size: 50, color: colorScheme.primary),
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 16),

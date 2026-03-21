@@ -5,13 +5,15 @@ class StoreModel {
   final String storeId;
   final String name;
   final String address;
-  final String? phoneNum;
+  final String phoneNum;
+  final String managerId;
 
   StoreModel({
     required this.storeId,
     required this.name,
     required this.address,
-    this.phoneNum,
+    this.phoneNum = '',
+    this.managerId = '',
   });
 
   /// Chuyển đổi từ Firestore document sang StoreModel
@@ -21,7 +23,8 @@ class StoreModel {
       storeId: doc.id,
       name: data['name'] ?? '',
       address: data['address'] ?? '',
-      phoneNum: data['store_phoneNum'],
+      phoneNum: data['store_phoneNum'] ?? '',
+      managerId: data['manager_id'] ?? '',
     );
   }
 
@@ -31,6 +34,7 @@ class StoreModel {
       'name': name,
       'address': address,
       'store_phoneNum': phoneNum,
+      'manager_id': managerId,
     };
   }
 }

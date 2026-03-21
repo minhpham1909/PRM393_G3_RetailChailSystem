@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/services/auth_service.dart';
+import '../widgets/admin_app_bar.dart';
 
 enum _ManagerMenuAction { details, edit, delete }
 
@@ -16,15 +18,16 @@ class AccountManagementScreen extends StatefulWidget {
 
 class _AccountManagementScreenState extends State<AccountManagementScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final AuthService _authService = AuthService();
   String _searchQuery = '';
   
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account Management'),
-        elevation: 0,
-      ),
+      backgroundColor: colorScheme.surfaceContainerLowest,
+      appBar: const AdminAppBar(),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestoreService.db
             .collection('users')
@@ -37,7 +40,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
 
           final managers = snapshot.hasData
               ? snapshot.data!.docs.map((doc) => UserModel.fromFirestore(doc)).toList()
-              : [];
+              : <UserModel>[];
 
           // Filter based on search query
           final filteredManagers = managers
@@ -49,33 +52,42 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Summary Card
-                Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'TOTAL STORE MANAGERS',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white70,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        managers.length.toString(),
-                        style:
-                            Theme.of(context).textTheme.displayMedium?.copyWith(
-                                  color: Colors.white,
+                // Compact Summary Card
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Card(
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    color: colorScheme.primaryContainer,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.manage_accounts, color: colorScheme.onPrimaryContainer),
+                              const SizedBox(width: 12),
+                              Text(
+                                'TOTAL STORE MANAGERS',
+                                style: TextStyle(
+                                  color: colorScheme.onPrimaryContainer,
                                   fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            managers.length.toString(),
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
@@ -88,10 +100,14 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                       // Add button
                       SizedBox(
                         width: double.infinity,
+                        height: 48,
                         child: FilledButton.icon(
                           onPressed: () => _showAddManagerDialog(),
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(Icons.person_add),
                           label: const Text('Add new Store Manager'),
+                          style: FilledButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -101,8 +117,15 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                         decoration: InputDecoration(
                           hintText: 'Search by name or email...',
                           prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: colorScheme.surface,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: colorScheme.outlineVariant),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: colorScheme.outlineVariant),
                           ),
                         ),
                         onChanged: (value) => setState(() => _searchQuery = value),
@@ -119,7 +142,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                     padding: const EdgeInsets.all(32),
                     child: Text(
                       'No Store Managers found',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   )
                 else
@@ -133,7 +156,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                           style: Theme.of(context)
                               .textTheme
                               .labelSmall
-                              ?.copyWith(color: Colors.grey[600]),
+                              ?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 12),
                         ListView.builder(
@@ -143,23 +166,35 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                           itemBuilder: (context, index) {
                             final manager = filteredManagers[index];
                             return Card(
+                              elevation: 0,
                               margin: const EdgeInsets.only(bottom: 12),
+                              color: colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                 leading: CircleAvatar(
+                                  backgroundColor: colorScheme.primaryContainer,
+                                  foregroundColor: colorScheme.onPrimaryContainer,
                                   child: Text(
                                     manager.fullName.isNotEmpty
                                         ? manager.fullName[0].toUpperCase()
                                         : '?',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                title: Text(manager.fullName),
+                                title: Text(manager.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
                                 subtitle: Text(
                                   manager.email,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: colorScheme.onSurfaceVariant),
                                 ),
                                 onTap: () => _showManagerDetailsDialog(manager),
                                 trailing: PopupMenuButton<_ManagerMenuAction>(
+                                  icon: const Icon(Icons.more_vert),
                                   onSelected: (action) {
                                     switch (action) {
                                       case _ManagerMenuAction.details:
@@ -176,15 +211,27 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                                   itemBuilder: (context) => const [
                                     PopupMenuItem(
                                       value: _ManagerMenuAction.details,
-                                      child: Text('View details'),
+                                      child: ListTile(
+                                        leading: Icon(Icons.visibility, size: 20),
+                                        title: Text('View details'),
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
                                     ),
                                     PopupMenuItem(
                                       value: _ManagerMenuAction.edit,
-                                      child: Text('Edit'),
+                                      child: ListTile(
+                                        leading: Icon(Icons.edit, size: 20),
+                                        title: Text('Edit'),
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
                                     ),
                                     PopupMenuItem(
                                       value: _ManagerMenuAction.delete,
-                                      child: Text('Delete'),
+                                      child: ListTile(
+                                        leading: Icon(Icons.delete, size: 20, color: Colors.red),
+                                        title: Text('Delete', style: TextStyle(color: Colors.red)),
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -195,7 +242,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
               ],
             ),
           );
@@ -208,190 +255,305 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => AlertDialog(
-        title: const Text('Store Manager details'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDetailRow('Name:', manager.fullName),
-              _buildDetailRow('Email:', manager.email),
-              _buildDetailRow('ID:', manager.accountId),
-              if (manager.storeId != null)
-                _buildDetailRow('Store ID:', manager.storeId!),
-            ],
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return AlertDialog(
+          icon: Icon(Icons.badge, color: colorScheme.primary, size: 40),
+          title: const Text('Store Manager Details', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailRow(Icons.person, 'Name', manager.fullName),
+                _buildDetailRow(Icons.email, 'Email', manager.email),
+                _buildDetailRow(Icons.phone, 'Phone', manager.phoneNum ?? 'Not set'),
+                _buildDetailRow(Icons.fingerprint, 'ID', manager.accountId),
+                if (manager.storeId != null && manager.storeId!.isNotEmpty)
+                  _buildDetailRow(Icons.store, 'Store ID', manager.storeId!),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showAddManagerDialog() {
     final emailCtrl = TextEditingController();
+    final passwordCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
     final storeIdCtrl = TextEditingController();
+
+    bool isLoading = false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add new Store Manager'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: emailCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final colorScheme = Theme.of(context).colorScheme;
+
+          return AlertDialog(
+            icon: Icon(Icons.person_add, color: colorScheme.primary, size: 40),
+            title: const Text('Create Store Manager', style: TextStyle(fontWeight: FontWeight.bold)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            content: SingleChildScrollView(
+              child: SizedBox(
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: emailCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Email Address',
+                        prefixIcon: const Icon(Icons.email),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: passwordCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      obscureText: true,
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: nameCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: phoneCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        prefixIcon: const Icon(Icons.phone),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: storeIdCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Store ID (optional)',
+                        prefixIcon: const Icon(Icons.store),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                  ],
                 ),
-                keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Full name',
-                  border: OutlineInputBorder(),
+            ),
+            actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            actions: [
+              if (!isLoading)
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: storeIdCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Store ID (optional)',
-                  border: OutlineInputBorder(),
-                ),
+              FilledButton.icon(
+                icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.check),
+                onPressed: isLoading ? null : () async {
+                  if (emailCtrl.text.trim().isEmpty || passwordCtrl.text.isEmpty || nameCtrl.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Email, Password, and Full Name are required')),
+                    );
+                    return;
+                  }
+
+                  setDialogState(() => isLoading = true);
+
+                  try {
+                    // Create Real Auth Account
+                    final newUid = await _authService.createAccountWithoutLogin(
+                      emailCtrl.text.trim(),
+                      passwordCtrl.text,
+                    );
+
+                    if (newUid == null) throw Exception("Failed to get UID after creation.");
+
+                    // Generate custom ID MGR_xxx
+                    final customId = await _generateManagerId();
+
+                    // Save to Firestore using customId instead of auth uid
+                    await _firestoreService.db.collection('users').doc(customId).set({
+                      'email': emailCtrl.text.trim(),
+                      'full_name': nameCtrl.text.trim(),
+                      'role': 'store_manager',
+                      'phone_number': phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
+                      'store_id': storeIdCtrl.text.trim().isEmpty ? null : storeIdCtrl.text.trim(),
+                      'auth_uid': newUid, // keep reference to firebase auth
+                      'created_at': FieldValue.serverTimestamp(),
+                    });
+
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Store Manager account created successfully')),
+                      );
+                    }
+                  } catch (e) {
+                    setDialogState(() => isLoading = false);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  }
+                },
+                label: Text(isLoading ? 'Creating...' : 'Create Account'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              if (emailCtrl.text.isEmpty || nameCtrl.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please fill in all required fields')),
-                );
-                return;
-              }
-
-              try {
-                // Lưu vào Firestore (không tạo auth account ở đây)
-                await _firestoreService.db.collection('users').add({
-                  'email': emailCtrl.text.trim(),
-                  'full_name': nameCtrl.text.trim(),
-                  'role': 'store_manager',
-                  'store_id': storeIdCtrl.text.isEmpty ? null : storeIdCtrl.text.trim(),
-                });
-
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Store Manager added successfully')),
-                  );
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: $e')),
-                );
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   void _showEditManagerDialog(UserModel manager) {
-    final emailCtrl = TextEditingController(text: manager.email);
     final nameCtrl = TextEditingController(text: manager.fullName);
+    final phoneCtrl = TextEditingController(text: manager.phoneNum ?? '');
     final storeIdCtrl = TextEditingController(text: manager.storeId ?? '');
+
+    bool isLoading = false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Store Manager'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: emailCtrl,
-                enabled: false,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final colorScheme = Theme.of(context).colorScheme;
+
+          return AlertDialog(
+            icon: Icon(Icons.manage_accounts, color: colorScheme.primary, size: 40),
+            title: const Text('Edit Store Manager', style: TextStyle(fontWeight: FontWeight.bold)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            content: SingleChildScrollView(
+              child: SizedBox(
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      initialValue: manager.email,
+                      decoration: InputDecoration(
+                        labelText: 'Email Address (Cannot change)',
+                        prefixIcon: const Icon(Icons.email),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: nameCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: phoneCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        prefixIcon: const Icon(Icons.phone),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: storeIdCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Store ID',
+                        prefixIcon: const Icon(Icons.store),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        filled: true,
+                      ),
+                      enabled: !isLoading,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Full name',
-                  border: OutlineInputBorder(),
+            ),
+            actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            actions: [
+              if (!isLoading)
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: storeIdCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Store ID',
-                  border: OutlineInputBorder(),
-                ),
+              FilledButton.icon(
+                icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.save),
+                onPressed: isLoading ? null : () async {
+                  if (nameCtrl.text.trim().isEmpty) {
+                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Name cannot be empty')));
+                     return;
+                  }
+
+                  setDialogState(() => isLoading = true);
+
+                  try {
+                    await _firestoreService.db.collection('users').doc(manager.accountId).update({
+                      'full_name': nameCtrl.text.trim(),
+                      'phone_number': phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
+                      'store_id': storeIdCtrl.text.trim().isEmpty ? null : storeIdCtrl.text.trim(),
+                      'updated_at': FieldValue.serverTimestamp(),
+                    });
+
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Updated successfully')),
+                      );
+                    }
+                  } catch (e) {
+                    setDialogState(() => isLoading = false);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  }
+                },
+                label: Text(isLoading ? 'Saving...' : 'Save Changes'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              try {
-                // Tìm document cần update
-                final query = await _firestoreService.db
-                    .collection('users')
-                    .where('email', isEqualTo: manager.email)
-                    .where('role', isEqualTo: 'store_manager')
-                    .get();
-
-                if (query.docs.isNotEmpty) {
-                  await query.docs.first.reference.update({
-                    'full_name': nameCtrl.text.trim(),
-                    'store_id': storeIdCtrl.text.isEmpty ? null : storeIdCtrl.text.trim(),
-                  });
-
-                  if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Updated successfully')),
-                    );
-                  }
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: $e')),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -399,58 +561,58 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
   void _showDeleteConfirmDialog(UserModel manager) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm delete'),
-        content: Text('Are you sure you want to delete ${manager.fullName}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              try {
-                // Tìm và xóa document
-                final query = await _firestoreService.db
-                    .collection('users')
-                    .where('email', isEqualTo: manager.email)
-                    .where('role', isEqualTo: 'store_manager')
-                    .get();
-
-                if (query.docs.isNotEmpty) {
-                  await query.docs.first.reference.delete();
+      builder: (context) {
+        return AlertDialog(
+          icon: const Icon(Icons.warning, color: Colors.red, size: 40),
+          title: const Text('Confirm Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text('Are you sure you want to permanently delete the account for ${manager.fullName}? This action cannot be undone and will revoke their access.'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  // Note: Firebase Auth account isn't deleted automatically here without Cloud Functions or Auth Admin SDK.
+                  // For MVP, we delete the Firestore doc which effectively strips off their role access.
+                  await _firestoreService.db.collection('users').doc(manager.accountId).delete();
 
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Deleted successfully')),
+                      const SnackBar(content: Text('Store Manager deleted')),
                     );
                   }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
                 }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: $e')),
-                );
-              }
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          const SizedBox(width: 12),
           SizedBox(
             width: 80,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[800]),
             ),
           ),
           Expanded(
@@ -459,5 +621,33 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
         ],
       ),
     );
+  }
+
+  /// Tự động sinh ID MGR_001, MGR_002... dựa trên các record hiện có
+  Future<String> _generateManagerId() async {
+    try {
+      final snapshot = await _firestoreService.db
+          .collection('users')
+          .where('role', isEqualTo: 'store_manager')
+          .get();
+
+      int maxId = 0;
+      for (var doc in snapshot.docs) {
+        final id = doc.id;
+        if (id.startsWith('MGR_')) {
+          final numPart = id.substring(4);
+          final num = int.tryParse(numPart);
+          if (num != null && num > maxId) {
+            maxId = num;
+          }
+        }
+      }
+
+      final nextId = maxId + 1;
+      return 'MGR_${nextId.toString().padLeft(3, '0')}';
+    } catch (e) {
+      // Fallback in case of error (dù hơi hiếm)
+      return 'MGR_${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    }
   }
 }

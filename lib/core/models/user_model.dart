@@ -7,6 +7,7 @@ class UserModel {
   final String email;
   final String fullName;
   final String role; // 'admin', 'store_manager'
+  final String? phoneNum;
   final String? storeId; // Chỉ có với Store Manager
 
   UserModel({
@@ -14,6 +15,7 @@ class UserModel {
     required this.email,
     required this.fullName,
     required this.role,
+    this.phoneNum,
     this.storeId,
   });
 
@@ -25,6 +27,7 @@ class UserModel {
       email: data['email'] ?? '',
       fullName: data['full_name'] ?? '',
       role: data['role'] ?? 'store_manager',
+      phoneNum: data['phone_number'],
       storeId: data['store_id'],
     );
   }
@@ -35,6 +38,7 @@ class UserModel {
       'email': email,
       'full_name': fullName,
       'role': role,
+      'phone_number': phoneNum,
       'store_id': storeId,
     };
   }
@@ -45,6 +49,7 @@ class UserModel {
     String? email,
     String? fullName,
     String? role,
+    String? phoneNum,
     String? storeId,
   }) {
     return UserModel(
@@ -52,6 +57,7 @@ class UserModel {
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
       role: role ?? this.role,
+      phoneNum: phoneNum ?? this.phoneNum,
       storeId: storeId ?? this.storeId,
     );
   }
