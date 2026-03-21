@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'core/models/order_model.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_routes.dart';
 import 'features/store_manager/manager_main_screen.dart';
@@ -51,33 +52,43 @@ class RCMSApp extends StatelessWidget {
 
         // ===== Routes Store Manager =====
         AppRoutes.manager: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: ManagerMainScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: ManagerMainScreen(),
+        ),
         AppRoutes.managerProfile: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: ManagerProfileScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: ManagerProfileScreen(),
+        ),
         AppRoutes.managerSettings: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: ManagerSettingsScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: ManagerSettingsScreen(),
+        ),
         AppRoutes.stockImportRequest: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: StockImportRequestScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: StockImportRequestScreen(),
+        ),
         AppRoutes.recentRequests: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: RecentRequestsScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: RecentRequestsScreen(),
+        ),
         AppRoutes.productDetail: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: ProductDetailScreen(),
-            ),
-        AppRoutes.orderDetail: (context) => const ProtectedRoute(
-              allowedRoles: ['store_manager'],
-              child: OrderDetailScreen(),
-            ),
+          allowedRoles: ['store_manager'],
+          child: ProductDetailScreen(),
+        ),
+        AppRoutes.orderDetail: (context) {
+          final args = ModalRoute.of(context)!.settings.arguments;
+          // Safely handle the case where arguments are provided and are of the correct type.
+          if (args is OrderModel) {
+            return ProtectedRoute(
+              allowedRoles: const ['store_manager'],
+              child: OrderDetailScreen(order: args),
+            );
+          }
+          // Display an error screen if the arguments are missing or incorrect.
+          return const Scaffold(
+            body: Center(child: Text('Error: Order data not provided.')),
+          );
+        },
 
         // ===== Routes Admin =====
         AppRoutes.admin: (context) => const ProtectedRoute(

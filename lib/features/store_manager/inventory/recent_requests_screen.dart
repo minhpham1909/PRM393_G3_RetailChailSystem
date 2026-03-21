@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RecentRequestsScreen extends StatefulWidget {
   const RecentRequestsScreen({super.key});
@@ -40,6 +41,20 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
       debugPrint('Lỗi tải yêu cầu gần đây: $e');
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Helper function to robustly parse date data from Firestore.
+  /// It can handle both Timestamp and ISO 8601 String formats.
+  DateTime? _parseDate(dynamic dateData) {
+    if (dateData == null) return null;
+    if (dateData is Timestamp) {
+      return dateData.toDate();
+    } else if (dateData is String) {
+      // Use tryParse to avoid crashing on invalid string formats.
+      return DateTime.tryParse(dateData);
+    }
+    // Return null if the data is of an unexpected type.
+    return null;
   }
 
   @override
@@ -105,19 +120,34 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
     }
 
     // Lấy ngày giờ
-    String dateStr = 'Unknown date';
-    if (request['created_at'] != null) {
-      final dt = request['created_at'].toDate();
+    String dateStr = 'Unknown';
+    final dt = _parseDate(request['created_at']);
+    if (dt != null) {
       dateStr = '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     }
 
-    // Danh sách sản phẩm (nếu có)
-    String itemsText = '${request['total_items'] ?? 0} Items';
-    if (request['items'] != null && request['items'] is List) {
-      final items = request['items'] as List;
-      if (items.isNotEmpty) {
-        itemsText = items.map((i) => i['name'] ?? 'Item').join(', ');
+    // Chi tiết sản phẩm
+    List<Widget> productDetailsWidgets = [];
+    if (request['products'] != null && request['products'] is List) {
+      final products = request['products'] as List;
+      if (products.isNotEmpty) {
+        for (var p in products) {
+          final productName = p['product_name'] ?? 'Unknown Product';
+          final quantity = p['quantity'] ?? 0;
+          productDetailsWidgets.add(
+            Text(
+              '$productName (x$quantity)',
+              style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }
+      } else {
+        productDetailsWidgets.add(Text('No items specified', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)));
       }
+    } else {
+      productDetailsWidgets.add(Text('No product data available', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)));
     }
 
     return Container(
@@ -165,12 +195,10 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            itemsText,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 6), // Giảm khoảng cách một chút
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: productDetailsWidgets,
           ),
           const SizedBox(height: 8),
           Row(

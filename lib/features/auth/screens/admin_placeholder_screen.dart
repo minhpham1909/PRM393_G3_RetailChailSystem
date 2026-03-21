@@ -7,9 +7,12 @@ import '../../../core/services/auth_service.dart';
 class AdminPlaceholderScreen extends StatelessWidget {
   const AdminPlaceholderScreen({super.key});
 
+  
   @override
   Widget build(BuildContext context) {
     final auth = AuthService();
+    // Tối ưu: Nên khởi tạo service một lần hoặc dùng DI (Provider, GetIt) thay vì trong build().
+    final authService = AuthService();
 
     return Scaffold(
       appBar: AppBar(
@@ -18,6 +21,7 @@ class AdminPlaceholderScreen extends StatelessWidget {
           IconButton(
             onPressed: () async {
               await auth.signOut();
+              await authService.signOut();
               if (context.mounted) {
                 Navigator.popUntil(context, (r) => r.isFirst);
               }
