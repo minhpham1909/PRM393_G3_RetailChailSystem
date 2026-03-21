@@ -9,6 +9,7 @@ class UserModel {
   final String role; // 'admin', 'store_manager'
   final String? phoneNum;
   final String? authMethod; // 'standard', 'google'
+  final String? authUid; // The Firebase Auth UID
   final String? storeId; // Chỉ có với Store Manager
 
   UserModel({
@@ -18,6 +19,7 @@ class UserModel {
     required this.role,
     this.phoneNum,
     this.authMethod,
+    this.authUid,
     this.storeId,
   });
 
@@ -31,6 +33,7 @@ class UserModel {
       role: data['role'] ?? 'store_manager',
       phoneNum: data['phone_number'],
       authMethod: data['auth_method'],
+      authUid: data['auth_uid'],
       storeId: data['store_id'],
     );
   }
@@ -43,6 +46,7 @@ class UserModel {
       'role': role,
       'phone_number': phoneNum,
       'auth_method': authMethod,
+      'auth_uid': authUid,
       'store_id': storeId,
     };
   }
@@ -55,6 +59,7 @@ class UserModel {
     String? role,
     String? phoneNum,
     String? authMethod,
+    String? authUid,
     String? storeId,
   }) {
     return UserModel(
@@ -64,6 +69,7 @@ class UserModel {
       role: role ?? this.role,
       phoneNum: phoneNum ?? this.phoneNum,
       authMethod: authMethod ?? this.authMethod,
+      authUid: authUid ?? this.authUid,
       storeId: storeId ?? this.storeId,
     );
   }

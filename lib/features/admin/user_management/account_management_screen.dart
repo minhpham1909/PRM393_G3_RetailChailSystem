@@ -476,7 +476,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
 
                     // Save to Firestore
                     await _firestoreService.db.collection('users').doc(customId).set({
-                      'email': emailCtrl.text.trim(),
+                      'email': emailCtrl.text.trim().toLowerCase(),
                       'full_name': nameCtrl.text.trim(),
                       'role': 'store_manager',
                       'phone_number': phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),

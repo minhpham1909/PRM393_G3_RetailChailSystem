@@ -42,7 +42,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
       if (user != null && user.email != null) {
         final userSnap = await _db
             .collection('users')
-            .where('email', isEqualTo: user.email)
+            .where('email', isEqualTo: user.email?.toLowerCase())
             .limit(1)
             .get();
 
