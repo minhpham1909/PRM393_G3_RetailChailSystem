@@ -8,6 +8,7 @@ class UserModel {
   final String fullName;
   final String role; // 'admin', 'store_manager'
   final String? phoneNum;
+  final String? authMethod; // 'standard', 'google'
   final String? storeId; // Chỉ có với Store Manager
 
   UserModel({
@@ -16,6 +17,7 @@ class UserModel {
     required this.fullName,
     required this.role,
     this.phoneNum,
+    this.authMethod,
     this.storeId,
   });
 
@@ -28,6 +30,7 @@ class UserModel {
       fullName: data['full_name'] ?? '',
       role: data['role'] ?? 'store_manager',
       phoneNum: data['phone_number'],
+      authMethod: data['auth_method'],
       storeId: data['store_id'],
     );
   }
@@ -39,6 +42,7 @@ class UserModel {
       'full_name': fullName,
       'role': role,
       'phone_number': phoneNum,
+      'auth_method': authMethod,
       'store_id': storeId,
     };
   }
@@ -50,6 +54,7 @@ class UserModel {
     String? fullName,
     String? role,
     String? phoneNum,
+    String? authMethod,
     String? storeId,
   }) {
     return UserModel(
@@ -58,6 +63,7 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       role: role ?? this.role,
       phoneNum: phoneNum ?? this.phoneNum,
+      authMethod: authMethod ?? this.authMethod,
       storeId: storeId ?? this.storeId,
     );
   }

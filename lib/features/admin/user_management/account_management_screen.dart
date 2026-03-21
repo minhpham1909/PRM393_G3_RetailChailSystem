@@ -269,6 +269,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                 _buildDetailRow(Icons.person, 'Name', manager.fullName),
                 _buildDetailRow(Icons.email, 'Email', manager.email),
                 _buildDetailRow(Icons.phone, 'Phone', manager.phoneNum ?? 'Not set'),
+                _buildDetailRow(Icons.security, 'Auth Type', manager.authMethod?.toUpperCase() ?? 'STANDARD'),
                 _buildDetailRow(Icons.fingerprint, 'ID', manager.accountId),
                 if (manager.storeId != null && manager.storeId!.isNotEmpty)
                   _buildDetailRow(Icons.store, 'Store ID', manager.storeId!),
@@ -293,6 +294,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
     final phoneCtrl = TextEditingController();
     final storeIdCtrl = TextEditingController();
 
+    bool isGoogleAuth = false;
     bool isLoading = false;
 
     showDialog(
@@ -312,30 +314,89 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Auth Method Toggle
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setDialogState(() => isGoogleAuth = false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: !isGoogleAuth ? colorScheme.primary : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Standard (Pass)',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: !isGoogleAuth ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setDialogState(() => isGoogleAuth = true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isGoogleAuth ? colorScheme.primary : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Google Auth',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isGoogleAuth ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
                     TextFormField(
                       controller: emailCtrl,
                       decoration: InputDecoration(
-                        labelText: 'Email Address',
+                        labelText: isGoogleAuth ? 'Gmail Address' : 'Email Address',
                         prefixIcon: const Icon(Icons.email),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         filled: true,
+                        hintText: isGoogleAuth ? 'example@gmail.com' : 'manager@rcms.vn',
                       ),
                       keyboardType: TextInputType.emailAddress,
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: passwordCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        filled: true,
+                    if (!isGoogleAuth) ...[
+                      TextFormField(
+                        controller: passwordCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          filled: true,
+                        ),
+                        obscureText: true,
+                        enabled: !isLoading,
                       ),
-                      obscureText: true,
-                      enabled: !isLoading,
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     TextFormField(
                       controller: nameCtrl,
                       decoration: InputDecoration(
@@ -382,9 +443,16 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
               FilledButton.icon(
                 icon: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.check),
                 onPressed: isLoading ? null : () async {
-                  if (emailCtrl.text.trim().isEmpty || passwordCtrl.text.isEmpty || nameCtrl.text.trim().isEmpty) {
+                  if (emailCtrl.text.trim().isEmpty || nameCtrl.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Email, Password, and Full Name are required')),
+                      const SnackBar(content: Text('Email and Full Name are required')),
+                    );
+                    return;
+                  }
+                  
+                  if (!isGoogleAuth && passwordCtrl.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password is required for Standard account')),
                     );
                     return;
                   }
@@ -392,25 +460,29 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
                   setDialogState(() => isLoading = true);
 
                   try {
-                    // Create Real Auth Account
-                    final newUid = await _authService.createAccountWithoutLogin(
-                      emailCtrl.text.trim(),
-                      passwordCtrl.text,
-                    );
-
-                    if (newUid == null) throw Exception("Failed to get UID after creation.");
+                    String? newUid;
+                    
+                    if (!isGoogleAuth) {
+                       // Create Real Auth Account only if Standard
+                       newUid = await _authService.createAccountWithoutLogin(
+                        emailCtrl.text.trim(),
+                        passwordCtrl.text,
+                      );
+                      if (newUid == null) throw Exception("Failed to create Auth account.");
+                    }
 
                     // Generate custom ID MGR_xxx
                     final customId = await _generateManagerId();
 
-                    // Save to Firestore using customId instead of auth uid
+                    // Save to Firestore
                     await _firestoreService.db.collection('users').doc(customId).set({
                       'email': emailCtrl.text.trim(),
                       'full_name': nameCtrl.text.trim(),
                       'role': 'store_manager',
                       'phone_number': phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
                       'store_id': storeIdCtrl.text.trim().isEmpty ? null : storeIdCtrl.text.trim(),
-                      'auth_uid': newUid, // keep reference to firebase auth
+                      'auth_method': isGoogleAuth ? 'google' : 'standard',
+                      'auth_uid': newUid, // will be null for Google accounts until they sign in
                       'created_at': FieldValue.serverTimestamp(),
                     });
 
