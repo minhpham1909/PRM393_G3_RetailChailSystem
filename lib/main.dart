@@ -9,6 +9,11 @@ import 'features/store_manager/reports/order_detail_screen.dart';
 import 'features/store_manager/inventory/stock_import_request_screen.dart';
 import 'features/store_manager/profile/manager_profile_screen.dart';
 import 'features/store_manager/profile/manager_settings_screen.dart';
+import 'features/admin/profile/admin_profile_screen.dart';
+import 'features/admin/user_management/account_management_screen.dart';
+import 'features/admin/product_management/product_management_screen.dart';
+import 'features/admin/warehouse_management/import_request_management_screen.dart';
+import 'features/admin/reports/store_product_performance_screen.dart';
 import 'features/store_manager/inventory/recent_requests_screen.dart';
 import 'features/store_manager/inventory/product_detail_screen.dart';
 import 'features/auth/auth_gate.dart';
@@ -91,9 +96,29 @@ class RCMSApp extends StatelessWidget {
 
         // ===== Routes Admin =====
         AppRoutes.admin: (context) => const ProtectedRoute(
-          allowedRoles: ['admin'],
-          child: AdminPlaceholderScreen(),
-        ),
+              allowedRoles: ['admin'],
+              child: AdminPlaceholderScreen(),
+            ),
+        AppRoutes.adminProfile: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: AdminProfileScreen(),
+            ),
+        AppRoutes.accountManagement: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: AccountManagementScreen(),
+            ),
+        AppRoutes.productManagement: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: ProductManagementScreen(),
+            ),
+        AppRoutes.importRequestManagement: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: ImportRequestManagementScreen(),
+            ),
+        AppRoutes.storeProductPerformance: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: StoreProductPerformanceScreen(),
+            ),
       },
     );
   }

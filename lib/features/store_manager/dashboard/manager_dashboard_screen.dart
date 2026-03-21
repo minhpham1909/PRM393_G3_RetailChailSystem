@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 
-/// Màn hình Dashboard của Store Manager
-/// Hiển thị: thông tin manager, doanh thu hôm nay, đơn hàng, nhân viên
-/// Thiết kế theo stitch template: manager_profile
+/// Store Manager dashboard screen.
+/// Shows: manager info, today's revenue, orders.
+/// Designed based on the stitch template: manager_profile
 import '../widgets/manager_app_bar.dart';
 
 class ManagerDashboardScreen extends StatefulWidget {
@@ -23,10 +23,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   StreamSubscription? _userSubscription;
   StreamSubscription? _ordersSubscription;
 
-  // ID cửa hàng của manager hiện tại
+  // Current manager store ID
   String? _storeId;
 
-  // Dữ liệu thống kê
+  // Summary data
   double _todayRevenue = 0;
   int _totalOrders = 0;
 
@@ -47,12 +47,12 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     super.dispose();
   }
 
-  /// Lắng nghe thông tin người dùng để lấy storeId, sau đó lắng nghe dữ liệu dashboard.
+  /// Listen to the user profile to get storeId, then listen to dashboard data.
   void _listenToProfileAndDashboardData() {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
 
-    // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
+    // Listen by email (not UID) for mock-data seeder compatibility.
     _userSubscription = _firestoreService.db
         .collection('users')
         .where('email', isEqualTo: currentUser.email)
@@ -62,9 +62,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           if (querySnapshot.docs.isEmpty || !mounted) return;
 
           final userDoc = querySnapshot.docs.first;
-          final newStoreId = userDoc.data()?['store_id'];
+          final newStoreId = userDoc.data()['store_id'];
 
-          // Chỉ đăng ký lại stream dashboard nếu storeId thay đổi
+          // Re-subscribe to the dashboard stream only if storeId changes.
           if (newStoreId != null && newStoreId != _storeId) {
             _storeId = newStoreId;
             _listenToDashboardData(newStoreId);
@@ -72,9 +72,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         });
   }
 
-  /// Lắng nghe dữ liệu đơn hàng trong ngày của cửa hàng để cập nhật dashboard real-time.
+  /// Listen to today's orders to update the dashboard in real-time.
   void _listenToDashboardData(String storeId) {
-    // Hủy subscription cũ trước khi tạo mới
+    // Cancel the old subscription before creating a new one.
     _ordersSubscription?.cancel();
 
     final today = DateTime.now();
@@ -104,7 +104,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         });
       },
       onError: (e) {
-        debugPrint('Lỗi tải dữ liệu dashboard: $e');
+        debugPrint('Failed to load dashboard data: $e');
       },
     );
   }
@@ -117,8 +117,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       backgroundColor: colorScheme.surface,
       appBar: const ManagerAppBar(),
       body: RefreshIndicator(
-        // Stream đã tự cập nhật, onRefresh chỉ để người dùng có cảm giác control.
-        // Có thể thêm logic fetch lại 1 lần ở đây nếu muốn.
+        // Stream already updates automatically; onRefresh is just for UX.
         onRefresh: () async {},
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -126,15 +125,15 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ===== THẺ DOANH THU HÔM NAY =====
+              // ===== TODAY'S REVENUE CARD =====
               _buildRevenueCard(context),
               const SizedBox(height: 16),
 
-              // ===== HÀNG THỐNG KÊ: Đơn hàng + Nhân viên =====
+              // ===== STATS ROW =====
               _buildStatsRow(context),
               const SizedBox(height: 32),
 
-              // ===== ĐIỀU KHIỂN QUẢN LÝ =====
+              // ===== MANAGEMENT CONTROLS =====
               _buildManagementControls(context),
               const SizedBox(height: 24),
             ],
@@ -144,7 +143,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Thẻ doanh thu hôm nay — theo stitch: gradient xanh lá, số lớn
+  /// Today's revenue card.
   Widget _buildRevenueCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -165,7 +164,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Tiêu đề
+          // Title
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -182,7 +181,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Số tiền lớn
+          // Amount
           Text(
             _formatCurrency(_todayRevenue),
             style: TextStyle(
@@ -197,7 +196,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Hàng thống kê: Đơn hàng và Nhân viên hoạt động
+  /// Stats card for today's orders.
   Widget _buildStatsRow(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -230,7 +229,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          // Thanh tiến trình
+          // Progress bar
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -245,7 +244,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Danh sách điều khiển quản lý — theo stitch: management controls nav
+  /// Management controls list.
   Widget _buildManagementControls(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -262,20 +261,20 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // Mục 1: Quản lý tồn kho
+        // Inventory
         _buildControlItem(
           context,
           icon: Icons.inventory_2_outlined,
           title: 'Inventory Management',
           subtitle: 'Restock levels & supplier status',
           onTap: () {
-            // Chuyển sang tab Inventory (index 1)
+            // Navigate to Inventory (tab index 1)
             widget.onNavigate(1);
           },
         ),
         const SizedBox(height: 8),
         // Removed Staff Roster completely
-        // Mục 3: Hiệu suất chi nhánh
+        // Branch performance
         _buildControlItem(
           context,
           icon: Icons.assessment_outlined,
@@ -287,7 +286,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     );
   }
 
-  /// Widget một mục trong danh sách điều khiển
+  /// Single control item widget.
   Widget _buildControlItem(
     BuildContext context, {
     required IconData icon,
@@ -308,7 +307,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
         ),
         child: Row(
           children: [
-            // Icon tròn
+            // Icon
             Container(
               width: 44,
               height: 44,
@@ -319,7 +318,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               child: Icon(icon, color: colorScheme.primary, size: 22),
             ),
             const SizedBox(width: 14),
-            // Tiêu đề và mô tả
+            // Title & subtitle
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,7 +340,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 ],
               ),
             ),
-            // Mũi tên
+            // Chevron
             Icon(
               Icons.chevron_right,
               color: colorScheme.onSurfaceVariant,

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../shared/profile/account_profile_screen.dart';
 
-class ManagerProfileScreen extends StatelessWidget {
-  const ManagerProfileScreen({super.key});
+class AdminProfileScreen extends StatelessWidget {
+  const AdminProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const AccountProfileScreen(
-      actorLabel: 'Store Manager',
-      showStoreInfo: true,
-      useManagerAppBar: true,
+      actorLabel: 'Admin',
+      showStoreInfo: false,
+      useManagerAppBar: false,
     );
   }
 }

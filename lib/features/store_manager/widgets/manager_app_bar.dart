@@ -2,12 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_routes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 
-/// App Bar dùng chung cho các tab của Store Manager
-/// - Hiển thị Avatar, Tên Store Manager, Tên Store
-/// - Bấm vào sẽ chuyển sang Profile
+/// Shared app bar for Store Manager screens.
+/// - Shows avatar, manager name, store name
+/// - Tap to open Profile
 class ManagerAppBar extends StatefulWidget implements PreferredSizeWidget {
   final bool showBackButton;
 
@@ -46,7 +45,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
       return;
     }
 
-    // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
+    // Listen by email (not UID) for mock-data seeder compatibility.
     _userSubscription = _firestoreService.db.collection('users')
       .where('email', isEqualTo: currentUser.email)
       .limit(1)
@@ -54,7 +53,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
       if (querySnapshot.docs.isEmpty || !mounted) return;
 
       final userDoc = querySnapshot.docs.first;
-      final userData = userDoc.data()!;
+      final userData = userDoc.data();
       final newManagerName = userData['full_name'] ?? 'Store Manager';
       final newStoreId = userData['store_id'];
       
@@ -68,7 +67,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
             final storeDoc = await _firestoreService.db.collection('stores').doc(newStoreId).get();
             newStoreName = storeDoc.exists ? (storeDoc.data()?['name'] ?? 'Unknown Store') : 'No Store Assigned';
           } catch (e) {
-            debugPrint('Lỗi tải tên cửa hàng cho AppBar: $e');
+            debugPrint('Failed to load store name for AppBar: $e');
             newStoreName = 'Error Loading Store';
           }
         } else {
@@ -86,7 +85,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
         }
       }
     }, onError: (e) {
-      debugPrint('Lỗi lắng nghe dữ liệu AppBar: $e');
+      debugPrint('AppBar listener error: $e');
       if (mounted) setState(() { _managerName = 'Error'; _storeName = 'Error'; });
     });
   }
@@ -99,7 +98,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
       elevation: 0,
       scrolledUnderElevation: 1,
       backgroundColor: colorScheme.surface,
-      automaticallyImplyLeading: widget.showBackButton, // Hiển thị nút back nếu được yêu cầu
+      automaticallyImplyLeading: widget.showBackButton, // Show back button when requested.
       title: GestureDetector(
         onTap: () {
           if (!widget.showBackButton) {
@@ -107,10 +106,10 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
           }
         },
         child: Container(
-          color: Colors.transparent, // Để nhận tap trên toàn Row
+          color: Colors.transparent, // Capture taps across the whole row.
           child: Row(
             children: [
-              // Avatar tròn
+              // Round avatar
               Container(
                 width: 44,
                 height: 44,
@@ -126,7 +125,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
               ),
               const SizedBox(width: 12),
               
-              // Tên Manager + Tên Store
+              // Store name + manager name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +159,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
         ),
       ),
       actions: [
-        // Nút Cài đặt (Settings)
+        // Settings
         IconButton(
           icon: const Icon(Icons.settings_outlined, color: Colors.black87),
           onPressed: () {

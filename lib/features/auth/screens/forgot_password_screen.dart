@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/auth_service.dart';
 
 /// Forgot Password UI theo Stitch
@@ -36,16 +37,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      await _authService.sendPasswordResetEmail(_emailController.text.trim());
+      final email = _emailController.text.trim();
+      await _authService.sendPasswordResetEmail(email);
       if (!mounted) return;
       setState(() {
         _successText =
-            'Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.';
+            'If this email exists for password sign-in, we\'ve sent password reset instructions.';
+      });
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e.code == 'invalid-email') {
+          _errorText = 'Invalid email address.';
+        } else if (e.code == 'user-not-found') {
+          _errorText = 'No account found with this email.';
+        } else if (e.code == 'too-many-requests') {
+          _errorText =
+              'Too many attempts. Please wait a few minutes and try again.';
+        } else if (e.code == 'unauthorized-continue-uri' ||
+            e.code == 'invalid-continue-uri' ||
+            e.code == 'missing-continue-uri') {
+          _errorText =
+              'Firebase password reset configuration is invalid (continue URL).';
+        } else if (e.code == 'expired-action-code') {
+          _errorText =
+              'This password reset link has expired. Please request a new one.';
+        } else {
+          _errorText =
+              'Unable to send reset email. Firebase returned: ${e.code}';
+        }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Không thể gửi email reset. Vui lòng thử lại.';
+        _errorText = 'Unable to send reset email. Please try again.';
       });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -161,9 +186,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               final value = (v ?? '').trim();
-                              if (value.isEmpty) return 'Vui lòng nhập email.';
-                              if (!value.contains('@'))
-                                return 'Email không hợp lệ.';
+                              if (value.isEmpty) return 'Please enter your email.';
+                              if (!value.contains('@')) return 'Invalid email address.';
                               return null;
                             },
                             decoration: InputDecoration(
@@ -200,17 +224,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text('Send Reset Code'),
-                                        const SizedBox(width: 8),
-                                        Icon(
-                                          Icons.arrow_forward,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      ],
+                                  : FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text('Send Reset Code'),
+                                          const SizedBox(width: 8),
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: colorScheme.onPrimary,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                             ),
                           ),
@@ -245,15 +272,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: colorScheme.secondary,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'SECURE AUTHENTICATION',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.4,
-                                fontSize: 10,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                        Flexible(
+                          child: Text(
+                            'SECURE AUTHENTICATION',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.4,
+                                  fontSize: 10,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ),
                       ],
                     ),

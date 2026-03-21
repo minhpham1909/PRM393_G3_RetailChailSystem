@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/product_model.dart';
 import '../widgets/product_selection_modal.dart';
 
-/// Màn hình Yêu cầu Nhập hàng (Stock Import Request)
-/// Cho phép Store Manager tạo yêu cầu nhập hàng về cửa hàng
-/// Thiết kế theo stitch template: stock_import_request
+/// Stock Import Request screen.
+/// Allows a Store Manager to create a stock import request for their store.
+/// Designed based on stitch template: stock_import_request
 class StockImportRequestScreen extends StatefulWidget {
   const StockImportRequestScreen({super.key});
 
@@ -44,38 +46,89 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
   Future<void> _submitRequest() async {
     if (_selectedProducts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất 1 sản phẩm')),
+        const SnackBar(content: Text('Please select at least 1 product')),
       );
       return;
     }
 
+    final stockError = await _validateCentralStockBeforeSubmit();
+    if (stockError != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(stockError)),
+        );
+      }
+      return;
+    }
+
     try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be signed in to submit a request')),
+        );
+        return;
+      }
+
+      String managerId = currentUser.uid;
+      String storeId = '';
+      try {
+        final userQuery = await _firestoreService.db
+            .collection('users')
+            .where('email', isEqualTo: currentUser.email)
+            .limit(1)
+            .get();
+        if (userQuery.docs.isNotEmpty) {
+          final userDoc = userQuery.docs.first;
+          final userData = userDoc.data();
+          managerId = userDoc.id;
+          storeId = (userData['store_id'] ?? '').toString();
+        }
+      } catch (_) {
+        // Fallback to uid; keep storeId empty if not resolvable.
+      }
+
+      final items = _selectedProducts
+          .map(
+            (p) => {
+              'product_id': p.product.productId,
+              'product_name': p.product.name,
+              'product_sku': p.product.sku,
+              'quantity': p.quantity,
+            },
+          )
+          .toList();
+
       // Tạo document yêu cầu nhập hàng trong Firestore
       await _firestoreService.addDocument('stock_requests', {
-        'products':
-            _selectedProducts
-                .map(
-                  (p) => {
-                    'product_id': p.product.productId,
-                    'product_name': p.product.name,
-                    'sku': p.product.sku,
-                    'quantity': p.quantity,
-                  },
-                )
-                .toList(),
+        'store_id': storeId,
+        'manager_id': managerId,
+        // New canonical field used by Admin side + mock schema.
+        'items': items,
+        // Legacy field kept for backward compatibility with older UI.
+        'products': items
+            .map(
+              (i) => {
+                'product_id': i['product_id'],
+                'product_name': i['product_name'],
+                'sku': i['product_sku'],
+                'quantity': i['quantity'],
+              },
+            )
+            .toList(),
         'source_warehouse': _sourceWarehouse,
         'priority': _priority,
-        'expected_date': _expectedDate?.toIso8601String(),
+        'expected_date': _expectedDate != null ? Timestamp.fromDate(_expectedDate!) : null,
         'notes': _notesController.text,
         'status': 'pending',
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': Timestamp.now(),
         'total_items': _selectedProducts.fold(0, (sum, p) => sum + p.quantity),
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Yêu cầu nhập hàng đã được gửi thành công!'),
+            content: Text('✅ Stock import request submitted successfully!'),
           ),
         );
         Navigator.pop(context);
@@ -83,10 +136,40 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ Lỗi gửi yêu cầu: $e')),
+          SnackBar(content: Text('❌ Failed to submit request: $e')),
         );
       }
     }
+  }
+
+  /// Validate tồn kho kho trung tâm trước khi submit.
+  /// - Không cho request sản phẩm stock = 0
+  /// - Chặn nếu quantity vượt quá stock hiện tại
+  ///
+  /// Trả về string lỗi nếu không hợp lệ, null nếu OK.
+  Future<String?> _validateCentralStockBeforeSubmit() async {
+    for (final selected in _selectedProducts) {
+      try {
+        final doc = await _firestoreService.db
+            .collection('products')
+            .doc(selected.product.productId)
+            .get();
+        if (!doc.exists) {
+          return '❌ Product no longer exists: ${selected.product.name}';
+        }
+        final data = doc.data() as Map<String, dynamic>;
+        final currentStock = (data['stock'] ?? 0).toInt();
+        if (currentStock <= 0) {
+          return '❌ Out of stock in central warehouse: ${selected.product.name} (${selected.product.sku})';
+        }
+        if (selected.quantity > currentStock) {
+          return '❌ Requested quantity exceeds central warehouse stock (${selected.product.sku}). Max: $currentStock';
+        }
+      } catch (e) {
+        return '❌ Unable to check stock for ${selected.product.sku}: $e';
+      }
+    }
+    return null;
   }
 
   @override
@@ -371,6 +454,17 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
                 IconButton(
                   icon: const Icon(Icons.add, size: 16),
                   onPressed: () {
+                    final maxQty = selected.product.stock;
+                    if (selected.quantity >= maxQty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '❌ Insufficient central stock (${selected.product.sku}). Max: $maxQty',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     setState(() => selected.quantity++);
                   },
                   constraints: const BoxConstraints(
@@ -651,9 +745,26 @@ class _StockImportRequestScreenState extends State<StockImportRequestScreen> {
             FilledButton(
               onPressed: () {
                 final newQty = int.tryParse(qtyController.text);
-                if (newQty != null && newQty > 0) {
-                  setState(() => selected.quantity = newQty);
+                if (newQty == null || newQty <= 0) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(content: Text('❌ Invalid quantity')),
+                  );
+                  return;
                 }
+
+                final maxQty = selected.product.stock;
+                if (newQty > maxQty) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '❌ Quantity exceeds central warehouse stock (${selected.product.sku}). Max: $maxQty',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                setState(() => selected.quantity = newQty);
                 Navigator.pop(context);
               },
               child: const Text('Save'),

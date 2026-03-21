@@ -34,13 +34,10 @@ class AuthService {
   }
 
   /// Đăng nhập bằng Google
-  /// Đăng nhập bằng Google
   Future<UserCredential?> signInWithGoogle() async {
     if (kIsWeb) {
       final provider = GoogleAuthProvider();
-      // Đổi từ signInWithRedirect sang signInWithPopup
-      // Hàm này sẽ mở popup và trả về credential sau khi user đăng nhập xong
-      return await _auth.signInWithPopup(provider); 
+      return await _auth.signInWithPopup(provider);
     }
 
     // Luồng cho Mobile giữ nguyên

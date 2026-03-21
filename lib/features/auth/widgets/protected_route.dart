@@ -70,7 +70,7 @@ class _ProtectedRouteState extends State<ProtectedRoute> {
         // Not authorized for this role
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Bạn không có quyền truy cập trang này')),
+            const SnackBar(content: Text('You do not have permission to access this page')),
           );
           Navigator.pushReplacementNamed(context, '/');
         }

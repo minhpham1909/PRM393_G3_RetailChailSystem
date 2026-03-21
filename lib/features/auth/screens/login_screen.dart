@@ -5,10 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/services/auth_service.dart';
 
-/// Login UI theo thiết kế Stitch (Prism Retail)
+/// Login UI (Stitch design / Prism Retail)
 /// - Email / Password
 /// - Remember device (UI only)
-/// - Link forgot password
+/// - Forgot password link
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -21,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _rememberMe = false;
   bool _isSubmitting = false;
   String? _errorText;
 
@@ -32,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    // Hỗ trợ flow Google redirect trên web: khi có session thì quay về AuthGate.
+    // Support Google redirect flow on web: when the session exists, return to AuthGate.
     _authSub = _authService.authStateChanges.listen((user) {
       if (!mounted || user == null) return;
       Navigator.pushReplacementNamed(context, '/');
@@ -67,10 +66,36 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       // Điều hướng về AuthGate để nó check role và redirect tới manager/admin
       Navigator.pushReplacementNamed(context, '/');
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Login failed: ${e.code} - ${e.message}');
+      if (!mounted) return;
+      setState(() {
+        if (e.code == 'invalid-email') {
+          _errorText = 'Invalid email address.';
+        } else if (e.code == 'user-not-found') {
+          _errorText = 'No account found with this email.';
+        } else if (e.code == 'wrong-password' ||
+            e.code == 'invalid-credential' ||
+            e.code == 'invalid-login-credentials') {
+          _errorText = 'Incorrect password.';
+        } else if (e.code == 'user-disabled') {
+          _errorText = 'This account has been disabled.';
+        } else if (e.code == 'operation-not-allowed') {
+          _errorText =
+              'Email/Password sign-in is not enabled in Firebase Authentication.';
+        } else if (e.code == 'too-many-requests') {
+          _errorText =
+              'Too many failed attempts. Please try again in a few minutes.';
+        } else if (e.code == 'network-request-failed') {
+          _errorText = 'Network error. Please check your internet connection.';
+        } else {
+          _errorText = 'Login failed (${e.code}).';
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Email hoặc mật khẩu không đúng.';
+        _errorText = 'Login failed. Please try again.';
       });
     } finally {
       if (mounted) {
@@ -107,12 +132,12 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       setState(() {
-        _errorText = 'Không thể đăng nhập Google. Vui lòng thử lại.';
+        _errorText = 'Unable to sign in with Google. Please try again.';
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Không thể đăng nhập Google. Vui lòng thử lại.';
+        _errorText = 'Unable to sign in with Google. Please try again.';
       });
     } finally {
       if (mounted) {
@@ -199,10 +224,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 prefixIcon: Icons.mail_outline,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
-                                  if (value.isEmpty)
-                                    return 'Vui lòng nhập email.';
-                                  if (!value.contains('@'))
-                                    return 'Email không hợp lệ.';
+                                  if (value.isEmpty) return 'Please enter your email.';
+                                  if (!value.contains('@')) return 'Invalid email address.';
                                   return null;
                                 },
                               ),
@@ -218,8 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   );
                                 },
                                 validator: (v) {
-                                  if ((v ?? '').isEmpty)
-                                    return 'Vui lòng nhập mật khẩu.';
+                                  if ((v ?? '').isEmpty) return 'Please enter your password.';
                                   return null;
                                 },
                               ),
