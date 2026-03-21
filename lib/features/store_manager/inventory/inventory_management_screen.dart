@@ -4,8 +4,8 @@ import '../../../core/services/firestore_service.dart';
 import '../../../core/constants/app_routes.dart';
 import '../widgets/manager_app_bar.dart';
 
-/// Màn hình Quản lý Tồn kho (Inventory Management)
-/// Hiển thị tổng quan tồn kho, tìm kiếm/lọc sản phẩm, danh sách sản phẩm
+/// Inventory Management screen.
+/// Shows inventory summary, search/filter, and product list.
 class InventoryManagementScreen extends StatefulWidget {
   const InventoryManagementScreen({super.key});
 
@@ -17,12 +17,12 @@ class InventoryManagementScreen extends StatefulWidget {
 class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   final FirestoreService _firestoreService = FirestoreService();
 
-  // Danh sách sản phẩm
+  // Product list
   List<ProductModel> _products = [];
   List<ProductModel> _filteredProducts = [];
   bool _isLoading = true;
 
-  // Bộ lọc hiện tại
+  // Current filters
   String _activeFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
@@ -38,7 +38,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     super.dispose();
   }
 
-  /// Tải danh sách sản phẩm từ Firestore
+  /// Load products from Firestore.
   Future<void> _loadProducts() async {
     try {
       final snapshot = await _firestoreService.getCollection('products');
@@ -55,7 +55,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Lỗi tải danh sách sản phẩm: $e');
+      debugPrint('Failed to load products: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -64,20 +64,20 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     return '${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")} VND';
   }
 
-  /// Áp dụng bộ lọc theo trạng thái tồn kho
+  /// Apply filters based on stock status.
   void _applyFilter() {
     final query = _searchController.text.toLowerCase();
 
     setState(() {
       _filteredProducts =
           _products.where((p) {
-            // Lọc theo từ khóa
+          // Keyword filter
             final matchesSearch =
                 query.isEmpty ||
                 p.name.toLowerCase().contains(query) ||
                 p.sku.toLowerCase().contains(query);
 
-            // Lọc theo trạng thái
+          // Stock-status filter
             final matchesFilter =
                 _activeFilter == 'All' || p.stockStatus == _activeFilter;
 
@@ -90,7 +90,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Tính thống kê
+    // Summary stats
     final totalItems = _products.length;
     final lowStockCount = _products.where((p) =>
         p.stockStatus == 'Low Stock' || p.stockStatus == 'Critical').length;
@@ -103,7 +103,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           onRefresh: _loadProducts,
           child: CustomScrollView(
             slivers: [
-              // ===== THẺ THỐNG KÊ TỔNG QUAN =====
+              // ===== SUMMARY CARDS =====
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -147,7 +147,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                 ),
               ),
 
-              // ===== Ô TÌM KIẾM =====
+              // ===== SEARCH =====
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -168,7 +168,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                 ),
               ),
 
-              // ===== BỘ LỌC CHIP =====
+              // ===== FILTER CHIPS =====
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -189,7 +189,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                 ),
               ),
 
-              // ===== DANH SÁCH SẢN PHẨM =====
+              // ===== PRODUCT LIST =====
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),

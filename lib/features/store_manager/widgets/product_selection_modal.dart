@@ -3,7 +3,7 @@ import 'dart:async';
 import '../../../core/models/product_model.dart';
 import '../../../core/services/firestore_service.dart';
 
-/// Class đại diện sản phẩm đã chọn với số lượng
+/// Represents a selected product with quantity.
 class SelectedProduct {
   final ProductModel product;
   int quantity;
@@ -11,7 +11,7 @@ class SelectedProduct {
   SelectedProduct({required this.product, required this.quantity});
 }
 
-/// Modal chọn sản phẩm đa năng (dùng cho Stock Request và POS)
+/// Reusable product selection modal (used for Stock Request and POS).
 class ProductSelectionModal extends StatefulWidget {
   final List<SelectedProduct> initialSelected;
   final String actionLabel;
@@ -57,7 +57,7 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
     super.dispose();
   }
 
-  /// Lắng nghe danh sách sản phẩm từ Firestore để cập nhật real-time.
+  /// Listen to the product list from Firestore in real-time.
   void _listenToProducts() {
     setState(() => _isLoading = true);
     _productsSubscription = _firestoreService.db.collection('products').orderBy('name').snapshots().listen((snapshot) {
@@ -68,17 +68,17 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
       if (mounted) {
         setState(() {
           _allProducts = products;
-          // Giữ lại category filter và search query hiện tại
+          // Keep current category filter and search query.
           _categories.clear();
           _categories.add('All Categories');
           _categories.addAll(cats);
           _isLoading = false;
         });
-        // Áp dụng lại bộ lọc sau khi có dữ liệu mới
+        // Re-apply filters after receiving new data.
         _filterProducts();
       }
     }, onError: (e) {
-      debugPrint('Lỗi tải sản phẩm modal: $e');
+      debugPrint('Failed to load products for modal: $e');
       if (mounted) setState(() => _isLoading = false);
     });
   }
@@ -90,7 +90,7 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
         final matchSearch = _searchQuery.isEmpty || 
             p.name.toLowerCase().contains(_searchQuery.toLowerCase()) || 
             p.sku.toLowerCase().contains(_searchQuery.toLowerCase());
-        // Thêm điều kiện: chỉ hiển thị sản phẩm còn hàng (stock > 0)
+        // Only show products in stock (stock > 0).
         return matchCategory && matchSearch && p.stock > 0;
       }).toList();
     });
@@ -120,7 +120,7 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20), // Bo góc đều 4 cạnh
+        borderRadius: BorderRadius.circular(20), // Rounded corners
       ),
       child: Column(
         children: [

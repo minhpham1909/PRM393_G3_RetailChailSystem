@@ -42,35 +42,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
       setState(() {
         _successText =
-            'Nếu email tồn tại với đăng nhập bằng mật khẩu, hệ thống đã gửi hướng dẫn đặt lại mật khẩu.';
+            'If this email exists for password sign-in, we\'ve sent password reset instructions.';
       });
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       setState(() {
         if (e.code == 'invalid-email') {
-          _errorText = 'Email không hợp lệ.';
+          _errorText = 'Invalid email address.';
         } else if (e.code == 'user-not-found') {
-          _errorText = 'Không tìm thấy tài khoản với email này.';
+          _errorText = 'No account found with this email.';
         } else if (e.code == 'too-many-requests') {
           _errorText =
-              'Bạn thao tác quá nhiều lần. Vui lòng đợi vài phút rồi thử lại.';
+              'Too many attempts. Please wait a few minutes and try again.';
         } else if (e.code == 'unauthorized-continue-uri' ||
             e.code == 'invalid-continue-uri' ||
             e.code == 'missing-continue-uri') {
           _errorText =
-              'Cấu hình reset password trên Firebase chưa đúng (continue URL).';
+              'Firebase password reset configuration is invalid (continue URL).';
         } else if (e.code == 'expired-action-code') {
           _errorText =
-              'Liên kết đặt lại mật khẩu đã hết hạn. Vui lòng gửi lại yêu cầu mới.';
+              'This password reset link has expired. Please request a new one.';
         } else {
           _errorText =
-              'Không thể gửi email reset. Firebase trả về: ${e.code}';
+              'Unable to send reset email. Firebase returned: ${e.code}';
         }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Không thể gửi email reset. Vui lòng thử lại.';
+        _errorText = 'Unable to send reset email. Please try again.';
       });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -186,9 +186,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               final value = (v ?? '').trim();
-                              if (value.isEmpty) return 'Vui lòng nhập email.';
-                              if (!value.contains('@'))
-                                return 'Email không hợp lệ.';
+                              if (value.isEmpty) return 'Please enter your email.';
+                              if (!value.contains('@')) return 'Invalid email address.';
                               return null;
                             },
                             decoration: InputDecoration(

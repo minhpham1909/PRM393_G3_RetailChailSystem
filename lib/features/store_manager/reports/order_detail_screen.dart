@@ -5,7 +5,7 @@ import 'package:project_prm393/core/services/firestore_service.dart';
 import 'package:project_prm393/core/services/printing_service.dart';
 import '../../../core/models/order_model.dart';
 
-/// Màn hình hiển thị chi tiết một hóa đơn
+/// Invoice detail screen.
 class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
 
@@ -27,7 +27,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _loadProductDetails();
   }
 
-  /// Tải thông tin chi tiết của các sản phẩm trong đơn hàng
+  /// Load product details for items in this order.
   Future<void> _loadProductDetails() async {
     if (widget.order.items.isEmpty) {
       if (mounted) setState(() => _isLoading = false);
@@ -56,7 +56,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Lỗi tải chi tiết sản phẩm: $e');
+      debugPrint('Failed to load product details: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }

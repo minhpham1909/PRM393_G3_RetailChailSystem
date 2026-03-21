@@ -81,7 +81,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
-            'Chỉnh sửa thông tin',
+            'Edit profile',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
@@ -91,7 +91,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 TextField(
                   controller: fullNameController,
                   decoration: const InputDecoration(
-                    labelText: 'Họ và tên',
+                    labelText: 'Full name',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -108,14 +108,14 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 TextField(
                   controller: phoneController,
                   decoration: const InputDecoration(
-                    labelText: 'Số điện thoại',
+                    labelText: 'Phone number',
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Lưu ý: Nếu thay đổi Email, bạn có thể cần đăng nhập lại.',
+                  'Note: If you change your email, you may need to sign in again.',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.orange,
@@ -128,7 +128,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('HỦY'),
+              child: const Text('CANCEL'),
             ),
             FilledButton(
               onPressed: isSaving
@@ -164,14 +164,14 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                           _loadAllData();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Cập nhật thông tin thành công!'),
+                              content: Text('Profile updated successfully!'),
                             ),
                           );
                         }
                       } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Lỗi: $e')),
+                            SnackBar(content: Text('Error: $e')),
                           );
                         }
                       } finally {
@@ -187,7 +187,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('LƯU THAY ĐỔI'),
+                  : const Text('SAVE CHANGES'),
             ),
           ],
         ),
@@ -211,7 +211,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
-            'Đổi mật khẩu',
+            'Change password',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
@@ -222,7 +222,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                   controller: oldPasswordController,
                   obscureText: !showOldPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu hiện tại',
+                    labelText: 'Current password',
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -243,7 +243,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                   controller: newPasswordController,
                   obscureText: !showNewPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mật khẩu mới',
+                    labelText: 'New password',
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -264,7 +264,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                   controller: confirmPasswordController,
                   obscureText: !showConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Xác nhận mật khẩu mới',
+                    labelText: 'Confirm new password',
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -286,7 +286,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('HỦY'),
+              child: const Text('CANCEL'),
             ),
             FilledButton(
               onPressed: isUpdating
@@ -296,7 +296,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                           confirmPasswordController.text) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Mật khẩu mới không khớp'),
+                            content: Text('New passwords do not match'),
                           ),
                         );
                         return;
@@ -311,7 +311,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Cập nhật thành công!'),
+                              content: Text('Updated successfully!'),
                             ),
                           );
                         }
@@ -320,7 +320,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Lỗi: $e (Cần đăng nhập lại để đổi mật khẩu)',
+                                'Error: $e (You may need to sign in again to change your password)',
                               ),
                             ),
                           );
@@ -338,7 +338,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('LƯU MẬT KHẨU'),
+                  : const Text('SAVE PASSWORD'),
             ),
           ],
         ),
@@ -350,12 +350,12 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?'),
+        title: const Text('Sign out'),
+        content: const Text('Are you sure you want to sign out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -372,7 +372,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 );
               }
             },
-            child: const Text('Đăng xuất'),
+            child: const Text('Sign out'),
           ),
         ],
       ),
@@ -414,7 +414,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
             const SizedBox(height: 32),
             _buildSectionHeader(
               context,
-              'THÔNG TIN CÁ NHÂN',
+              'PERSONAL INFORMATION',
               onEdit: _showEditProfileModal,
             ),
             const SizedBox(height: 16),
@@ -433,18 +433,18 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 ),
                 _buildInfoRow(
                   Icons.phone_outlined,
-                  'Số điện thoại',
+                  'Phone number',
                   _userData?['phone'] ?? 'N/A',
                 ),
                 _buildInfoRow(
                   Icons.work_outline,
-                  'Chức vụ',
+                  'Role',
                   _userData?['role']?.toString().toUpperCase() ??
                       widget.actorLabel.toUpperCase(),
                 ),
                 _buildInfoRow(
                   Icons.calendar_today_outlined,
-                  'Ngày tham gia',
+                  'Joined',
                   _formatDate(_userData?['created_at']),
                 ),
               ],
@@ -455,34 +455,34 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
               child: FilledButton.tonalIcon(
                 onPressed: _showPasswordChangeModal,
                 icon: const Icon(Icons.lock_reset, size: 20),
-                label: const Text('ĐỔI MẬT KHẨU'),
+                label: const Text('CHANGE PASSWORD'),
               ),
             ),
             if (widget.showStoreInfo) ...[
               const SizedBox(height: 32),
-              _buildSectionHeader(context, 'THÔNG TIN CHI NHÁNH'),
+              _buildSectionHeader(context, 'BRANCH INFORMATION'),
               const SizedBox(height: 16),
               _buildInfoCard(
                 colorScheme,
                 [
                   _buildInfoRow(
                     Icons.storefront,
-                    'Tên cửa hàng',
+                    'Store name',
                     _storeData?['name'] ?? 'N/A',
                   ),
                   _buildInfoRow(
                     Icons.location_on_outlined,
-                    'Địa chỉ',
+                    'Address',
                     _storeData?['address'] ?? 'N/A',
                   ),
                   _buildInfoRow(
                     Icons.phone_in_talk_outlined,
-                    'Hotline cửa hàng',
+                    'Store hotline',
                     _storeData?['store_phoneNum'] ?? 'N/A',
                   ),
                   _buildInfoRow(
                     Icons.info_outline,
-                    'Trạng thái',
+                    'Status',
                     _storeData?['status']?.toString().toUpperCase() ?? 'ACTIVE',
                     isSuccess: true,
                   ),
@@ -493,7 +493,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
             OutlinedButton.icon(
               onPressed: _logout,
               icon: const Icon(Icons.logout),
-              label: const Text('ĐĂNG XUẤT'),
+              label: const Text('SIGN OUT'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 54),
                 foregroundColor: colorScheme.error,
@@ -587,7 +587,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
           TextButton.icon(
             onPressed: onEdit,
             icon: const Icon(Icons.edit, size: 14),
-            label: const Text('Sửa', style: TextStyle(fontSize: 12)),
+            label: const Text('Edit', style: TextStyle(fontSize: 12)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: Size.zero,

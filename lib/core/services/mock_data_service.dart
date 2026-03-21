@@ -4,20 +4,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../core/services/firestore_service.dart';
 
-/// Dịch vụ tạo dữ liệu giả (Mock Data) để phục vụ việc test
-/// Cập nhật: Đọc dữ liệu từ file JSON trong assets/data và đẩy lên Firebase
+/// Mock data seeding service for testing.
+/// Reads JSON files in assets/data and uploads them to Firebase.
 class MockDataService {
   final FirestoreService _firestore = FirestoreService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> seedMockData() async {
     try {
-      print('🚀 BẮT ĐẦU SEED DỮ LIỆU TỪ ASSETS...');
+      print('🚀 STARTING MOCK DATA SEED FROM ASSETS...');
 
-      // 1. Đọc và Seed Users & Auth
+      // 1. Seed Users & Auth
       await _seedUsers();
 
-      // 2. Đọc và Seed Các bảng dữ liệu khác
+      // 2. Seed other collections
       await _seedCollection('data/stores.json', 'stores', 'store_id');
       await _seedCollection('data/warehouses.json', 'warehouses', 'warehouse_id');
       await _seedCollection('data/categories.json', 'categories', 'category_id');
@@ -25,12 +25,12 @@ class MockDataService {
       await _seedCollection('data/orders.json', 'orders', 'order_id');
       await _seedCollection('data/stock_requests.json', 'stock_requests', 'request_id');
 
-      // 3. Seed Inventory (Đặc thù dạng Map)
+      // 3. Seed Inventory (special Map format)
       await _seedInventory();
 
-      print('🎉 SEED DỮ LIỆU THÀNH CÔNG!');
+      print('🎉 SEED COMPLETED SUCCESSFULLY!');
     } catch (e) {
-      print('❌ LỖI SEED DỮ LIỆU: $e');
+      print('❌ SEED FAILED: $e');
     }
   }
 
@@ -46,10 +46,10 @@ class MockDataService {
       for (var user in users) {
         final email = user['email'] as String;
         final passwordStr = user['password_hash'] as String;
-        final password = passwordStr.replaceFirst('hashed_', ''); // Giả lập giải mã
+        final password = passwordStr.replaceFirst('hashed_', ''); // Simulated decode
         final uid = user['account_id'] as String;
 
-        // Xóa thuộc tính thừa
+        // Remove extra fields
         final dataToSave = Map<String, dynamic>.from(user);
         dataToSave.remove('password_hash');
         
@@ -57,10 +57,9 @@ class MockDataService {
            dataToSave['created_at'] = Timestamp.fromDate(DateTime.parse(dataToSave['created_at']));
         }
 
-        // Tạo tài khoản Firebase Auth
+        // Create Firebase Auth account
         try {
-          // Lưu ý: Việc này trên client sẽ tự đăng nhập user mới tạo. 
-          // Cần cảnh báo người dùng.
+          // Note: On client, this may sign in as the newly created user.
           await _auth.createUserWithEmailAndPassword(
             email: email,
             password: password,
@@ -70,20 +69,20 @@ class MockDataService {
           if (e.code == 'email-already-in-use') {
             print('⚠️ Auth Exists: $email');
           } else {
-            print('❌ Auth Error cho $email: ${e.message}');
+            print('❌ Auth Error for $email: ${e.message}');
           }
         }
 
-        // Tạo tài liệu trong collection 'users' dùng custom UID
+        // Create Firestore doc in 'users' collection using custom UID
         final docRef = _firestore.db.collection('users').doc(uid);
         batch.set(docRef, dataToSave);
       }
       
       await batch.commit();
-      print('✅ Đã lưu bảng users vào Firestore');
+      print('✅ Saved users collection to Firestore');
 
     } catch (e) {
-      print('❌ Lỗi _seedUsers: $e');
+      print('❌ _seedUsers error: $e');
     }
   }
 
@@ -105,7 +104,7 @@ class MockDataService {
         final dataToSave = Map<String, dynamic>.from(item);
         dataToSave.remove('___comment');
 
-        // Parse ngày tháng
+        // Parse timestamps
         dataToSave.forEach((key, value) {
           if (value is String && value.endsWith('Z') && value.contains('T')) {
             try {
@@ -126,9 +125,9 @@ class MockDataService {
       }
 
       await batch.commit();
-      print('✅ Đã đẩy ${dataList.length} docs lên $collectionName');
+      print('✅ Uploaded ${dataList.length} docs to $collectionName');
     } catch (e) {
-      print('⚠️ Bỏ qua $collectionName (Không tìm thấy file hoặc lỗi): $e');
+      print('⚠️ Skipped $collectionName (file missing or error): $e');
     }
   }
 
@@ -164,9 +163,9 @@ class MockDataService {
       });
       
       await batch.commit();
-      print('✅ Đã lưu toàn bộ inventory');
+      print('✅ Saved all inventory');
     } catch (e) {
-      print('⚠️ Lỗi _seedInventory: $e');
+      print('⚠️ _seedInventory error: $e');
     }
   }
 
@@ -179,7 +178,7 @@ class MockDataService {
         batch.delete(doc.reference);
       }
       await batch.commit();
-      print('🗑️ Đã xóa $coll');
+      print('🗑️ Deleted $coll');
     }
   }
 }

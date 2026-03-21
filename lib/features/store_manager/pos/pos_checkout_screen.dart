@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/models/order_model.dart';
@@ -19,7 +18,6 @@ class PosCheckoutScreen extends StatefulWidget {
 
 class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   final FirestoreService _firestoreService = FirestoreService();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final List<SelectedProduct> _selectedProducts = [];
   String _paymentMethod = 'Cash';
   bool _isProcessing = false;
@@ -42,19 +40,19 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     super.dispose();
   }
 
-  /// Lắng nghe thông tin của người dùng đang đăng nhập để lấy managerId và storeId
-  /// Dữ liệu sẽ tự động cập nhật nếu có thay đổi trên server.
+  /// Listen to the current signed-in user profile to get managerId and storeId.
+  /// Data updates automatically if server-side changes occur.
   void _listenToProfileInfo() {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        debugPrint('Lỗi POS: Không có người dùng nào được xác thực.');
-        // Có thể hiển thị lỗi cho người dùng ở đây nếu cần
+        debugPrint('POS error: No authenticated user.');
+        // You can show a user-facing error here if needed.
         return;
       }
 
-      // Lắng nghe user document bằng email thay vì UID, để tương thích với mock data seeder.
-      // Seeder hiện tại tạo Auth user với UID tự động, nhưng Firestore doc lại dùng ID tùy chỉnh.
+      // Listen to the user document by email (not UID) for mock-data seeder compatibility.
+      // Seeder creates Auth users with auto UIDs, but Firestore docs use custom IDs.
       _userSubscription = _firestoreService.db
           .collection('users')
           .where('email', isEqualTo: currentUser.email)
@@ -65,7 +63,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           final userDoc = querySnapshot.docs.first;
           final userData = userDoc.data() as Map<String, dynamic>?;
           if (mounted && userData != null && userData['role'] == 'store_manager') {
-            // Chỉ cập nhật state nếu dữ liệu thực sự thay đổi
+            // Update state only when data actually changes.
             if (_managerId != userDoc.id || _storeId != userData['store_id']) {
               setState(() {
                 _managerId = userDoc.id;
@@ -74,16 +72,16 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             }
           }
         } else {
-          // Xử lý trường hợp không tìm thấy user doc
-          debugPrint('Lỗi POS: Không tìm thấy thông tin người dùng trong Firestore.');
+          // User doc not found.
+          debugPrint('POS error: User profile not found in Firestore.');
           if (mounted) setState(() { _managerId = null; _storeId = null; });
         }
       }, onError: (e) {
-        debugPrint('Lỗi lắng nghe thông tin quản lý cho POS: $e');
+        debugPrint('POS error listening to manager profile: $e');
         if (mounted) setState(() { _managerId = null; _storeId = null; });
       });
     } catch (e) {
-      debugPrint('Lỗi thiết lập lắng nghe thông tin quản lý: $e');
+      debugPrint('POS error setting up profile listener: $e');
     }
   }
   double get _total => _selectedProducts.fold(0.0, (sum, p) => sum + (p.product.price * p.quantity));
@@ -95,14 +93,14 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   Future<void> _handleCheckout() async {
     if (_selectedProducts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn sản phẩm trước khi thanh toán')),
+        const SnackBar(content: Text('Please select items before checkout')),
       );
       return;
     }
 
     if (_storeId == null || _managerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lỗi: Không tìm thấy thông tin cửa hàng')),
+        const SnackBar(content: Text('Error: Store information not found')),
       );
       return;
     }
@@ -115,24 +113,24 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 
       late OrderModel createdOrder;
       
-      // Lấy thông tin chi tiết sản phẩm để dùng sau khi thanh toán thành công
-      // Điều này đảm bảo chúng ta có thông tin chính xác tại thời điểm thanh toán
+      // Keep product details for receipt after a successful checkout.
+      // This ensures we have consistent info at the time of checkout.
       final productDetailsForReceipt = {
         for (var p in _selectedProducts) p.product.productId: p.product
       };
 
       // Run Transaction to ensure stock is updated atomically
       await _firestoreService.db.runTransaction((transaction) async {
-        // 1. Đọc và kiểm tra tồn kho cho từng sản phẩm một cách tuần tự.
-        // Việc này kém hiệu quả hơn so với đọc song song (Future.wait),
-        // nhưng nó giúp tránh các lỗi tiềm ẩn trong các phiên bản cũ của plugin Firestore
-        // khi xử lý nhiều thao tác đọc đồng thời trong một giao dịch.
+        // 1. Read and validate stock sequentially per item.
+        // This is less efficient than parallel reads (Future.wait), but helps avoid
+        // some edge cases in older Firestore plugin versions when performing multiple
+        // concurrent reads inside a transaction.
         for (final sp in _selectedProducts) {
           final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
           final productDoc = await transaction.get(productRef);
 
           if (!productDoc.exists) {
-            throw Exception('Sản phẩm ${sp.product.name} không tồn tại');
+            throw Exception('Product ${sp.product.name} does not exist');
           }
 
           final stockData = productDoc.data()?['stock'];
@@ -142,11 +140,11 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           }
           
           if (currentStock < sp.quantity) {
-            throw Exception('Sản phẩm ${sp.product.name} không đủ tồn kho (Còn: $currentStock)');
+            throw Exception('Not enough stock for ${sp.product.name} (Remaining: $currentStock)');
           }
         }
 
-        // 2. Nếu tất cả kiểm tra đều qua, giảm số lượng tồn kho cho tất cả sản phẩm
+        // 2. If all checks pass, decrement stock for all items.
         for (var sp in _selectedProducts) {
           final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
           transaction.update(productRef, {
@@ -154,7 +152,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           });
         }
 
-        // 3. Tạo tài liệu Order
+        // 3. Create the order document.
         final orderItems = _selectedProducts.map((sp) => OrderDetailModel(
           orderId: orderRef.id,
           productId: sp.product.productId,
@@ -186,20 +184,20 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       }
     } catch (e, s) {
       if (mounted) {
-        // In lỗi chi tiết ra console để debug
-        debugPrint('Lỗi thanh toán: $e');
+        // Log details for debugging.
+        debugPrint('Checkout error: $e');
         debugPrint('Stack trace: $s');
 
-        // Tạo thông báo lỗi thân thiện với người dùng
+        // Create a user-friendly message.
         String errorMessage = e.toString();
         if (e is FirebaseException) {
-          errorMessage = e.message ?? 'Lỗi không xác định từ Firebase.';
+          errorMessage = e.message ?? 'Unknown Firebase error.';
         } else if (e is Exception) {
           errorMessage = e.toString().replaceFirst('Exception: ', '');
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ Lỗi thanh toán: $errorMessage'),
+          SnackBar(content: Text('❌ Checkout failed: $errorMessage'),
           backgroundColor: Theme.of(context).colorScheme.error),
         );
       }
@@ -214,13 +212,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Thanh toán thành công!'),
+        title: const Text('Payment successful!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 64),
             const SizedBox(height: 16),
-            const Text('Đơn hàng đã được ghi nhận và kho đã được cập nhật.',
+            const Text('The order has been recorded and inventory has been updated.',
                 textAlign: TextAlign.center),
           ],
         ),
@@ -232,7 +230,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                 productDetails: productDetails,
               );
             },
-            child: const Text('In hóa đơn'),
+            child: const Text('Print receipt'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context),
@@ -286,7 +284,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                       children: [
                         Icon(Icons.shopping_basket_outlined, size: 64, color: colorScheme.surfaceContainerHighest),
                         const SizedBox(height: 16),
-                        Text('Giỏ hàng trống', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+                        Text('Cart is empty', style: TextStyle(color: colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   )
@@ -405,11 +403,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                 icon: const Icon(Icons.add_circle_outline, size: 20),
                 onPressed: () {
                   setState(() {
-                    // Kiểm tra số lượng tồn kho trước khi tăng
+                    // Check stock before increasing quantity.
                     if (item.quantity + 1 <= item.product.stock) {
                       item.quantity++;
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sản phẩm ${item.product.name} chỉ còn ${item.product.stock} sản phẩm.')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${item.product.name} has only ${item.product.stock} units left.')),
+                      );
                     }
                   });
                 },
@@ -477,8 +477,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          insetPadding: const EdgeInsets.all(20), // Thêm khoảng cách từ các cạnh màn hình
-          child: ConstrainedBox( // Giới hạn chiều cao của nội dung dialog
+          insetPadding: const EdgeInsets.all(20), // Add padding from screen edges.
+          child: ConstrainedBox( // Constrain dialog content height.
             constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
             child: ProductSelectionModal(
               initialSelected: _selectedProducts,

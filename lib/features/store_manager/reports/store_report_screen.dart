@@ -7,8 +7,8 @@ import '../../../core/models/order_model.dart';
 import '../widgets/manager_app_bar.dart';
 import 'order_detail_screen.dart';
 
-/// Màn hình Báo cáo Chi nhánh (Store Report)
-/// Hiển thị doanh thu thực tế, lọc theo ngày/tháng, và danh sách hóa đơn
+/// Store report screen.
+/// Shows revenue, supports day/month filtering, and lists invoices.
 class StoreReportScreen extends StatefulWidget {
   const StoreReportScreen({super.key});
 
@@ -21,12 +21,12 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
 
   // Filter state
   DateTime _selectedDate = DateTime.now();
-  String _filterMode = 'Day'; // 'Day' hoặc 'Month'
+  String _filterMode = 'Day'; // 'Day' or 'Month'
 
   // Data
 
   String _formatCurrency(double amount) {
-    // Sử dụng intl để định dạng tiền tệ chuyên nghiệp và dễ bảo trì hơn
+    // Use intl for consistent currency formatting.
     return NumberFormat.currency(
       locale: 'vi_VN',
       symbol: 'VND',
@@ -53,7 +53,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Xác định khoảng thời gian lọc dựa trên state
+    // Determine the filtered time range based on state.
     DateTime start;
     DateTime end;
     if (_filterMode == 'Day') {
@@ -68,7 +68,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       end = DateTime(_selectedDate.year, _selectedDate.month + 1, 1);
     }
 
-    // Tạo stream query
+    // Build the stream query.
     final ordersStream = _firestoreService.db
         .collection('orders')
         .where('status', isEqualTo: 'paid')
@@ -87,10 +87,10 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Lỗi tải dữ liệu: ${snapshot.error}'));
+            return Center(child: Text('Failed to load data: ${snapshot.error}'));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            // Vẫn hiển thị bộ lọc và thẻ summary với giá trị 0
+            // Still show filters and summary with 0 values.
             return _buildReportBody(context, [], 0);
           }
 
@@ -108,7 +108,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     );
   }
 
-  /// Widget chứa toàn bộ body của màn hình báo cáo
+  /// Widget containing the report screen body.
   Widget _buildReportBody(
     BuildContext context,
     List<OrderModel> invoices,
@@ -116,14 +116,13 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final chartSpots = _prepareChartData(invoices, _filterMode, _selectedDate);
-    // Tìm giá trị Y lớn nhất để co giãn biểu đồ
+    // Find max Y to scale the chart.
     final maxY = chartSpots.fold<double>(
       0.0,
       (max, spot) => spot.y > max ? spot.y : max,
     );
 
-    // Sử dụng CustomScrollView để xử lý các layout có thể bị tràn màn hình một cách linh hoạt.
-    // Cách này hiệu quả hơn là lồng các ListView hoặc dùng SingleChildScrollView với Column.
+    // CustomScrollView helps avoid overflow with long layouts.
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _buildFilterSection(context)),
@@ -171,7 +170,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     );
   }
 
-  /// Chuẩn bị dữ liệu cho biểu đồ từ danh sách hóa đơn
+  /// Prepare chart data from invoice list.
   List<FlSpot> _prepareChartData(
     List<OrderModel> invoices,
     String filterMode,
@@ -184,7 +183,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         selectedDate.year,
         selectedDate.month,
       );
-      // Khởi tạo map với tất cả các ngày trong tháng, doanh thu = 0
+      // Initialize map for all days in month, revenue = 0.
       final Map<int, double> dailyRevenue = {
         for (var i = 1; i <= daysInMonth; i++) i: 0.0,
       };
@@ -201,7 +200,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           .toList();
     } else {
       // Day
-      // Khởi tạo map với tất cả các giờ trong ngày, doanh thu = 0
+      // Initialize map for all hours in day, revenue = 0.
       final Map<int, double> hourlyRevenue = {
         for (var i = 0; i < 24; i++) i: 0.0,
       };
@@ -261,7 +260,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           Text(
             _filterMode == 'Day'
                 ? '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'
-                : 'Tháng ${_selectedDate.month}/${_selectedDate.year}',
+                : 'Month ${_selectedDate.month}/${_selectedDate.year}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
@@ -352,7 +351,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Hàm định dạng nhãn trục Y (ví dụ: 1,000,000 -> 1M)
+    // Format Y-axis labels (e.g., 1,000,000 -> 1M)
     String formatYAxis(double value) {
       if (value >= 1000000) {
         return '${(value / 1000000).toStringAsFixed(1)}M';
@@ -362,7 +361,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       return value.toStringAsFixed(0);
     }
 
-    // Hàm tạo widget cho nhãn trục X
+    // Build X-axis labels.
     Widget bottomTitleWidgets(double value, TitleMeta meta) {
       final style = TextStyle(
         fontSize: 10,
@@ -370,7 +369,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       );
       String text;
       if (filterMode == 'Month') {
-        // Chỉ hiển thị nhãn cho các ngày 1, 5, 10, 15, ...
+        // Show labels for days 1, 5, 10, 15, ...
         if (value.toInt() % 5 == 0 || value.toInt() == 1) {
           text = value.toInt().toString();
         } else {
@@ -378,7 +377,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         }
       } else {
         // Day
-        // Chỉ hiển thị nhãn cho các mốc 0h, 6h, 12h, 18h
+        // Show labels at 0h, 6h, 12h, 18h.
         if (value.toInt() % 6 == 0) {
           text = '${value.toInt()}h';
         } else {
@@ -405,7 +404,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       ),
       child: LineChart(
         LineChartData(
-          // Dữ liệu tooltip khi chạm vào
+          // Tooltip config.
           lineTouchData: LineTouchData(
             handleBuiltInTouches: true,
             touchTooltipData: LineTouchTooltipData(
@@ -437,7 +436,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               },
             ),
           ),
-          // Lưới
+          // Grid.
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
@@ -448,7 +447,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               );
             },
           ),
-          // Tiêu đề các trục
+          // Axis titles.
           titlesData: FlTitlesData(
             show: true,
             rightTitles: const AxisTitles(
@@ -471,7 +470,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                 reservedSize: 40,
                 getTitlesWidget: (value, meta) {
                   if (value == 0 || value >= meta.max)
-                    return const SizedBox(); // Không hiển thị nhãn ở 0 và ở đỉnh
+                    return const SizedBox(); // Hide at 0 and top.
                   return Text(
                     formatYAxis(value),
                     style: TextStyle(
@@ -484,9 +483,9 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               ),
             ),
           ),
-          // Đường viền
+          // Border.
           borderData: FlBorderData(show: false),
-          // Giá trị min/max các trục
+          // Axis min/max.
           minX: filterMode == 'Month' ? 1 : 0,
           maxX: filterMode == 'Month'
               ? DateUtils.getDaysInMonth(
@@ -498,8 +497,8 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           maxY: maxY == 0
               ? 100000
               : maxY *
-                    1.2, // Nếu max Y là 0, đặt một giá trị mặc định để biểu đồ không bị dẹt
-          // Dữ liệu đường line
+                1.2, // Use a default if maxY is 0.
+            // Line data.
           lineBarsData: [
             LineChartBarData(
               spots: spots,
@@ -538,7 +537,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Không có hóa đơn nào',
+            'No invoices found',
             style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
         ],

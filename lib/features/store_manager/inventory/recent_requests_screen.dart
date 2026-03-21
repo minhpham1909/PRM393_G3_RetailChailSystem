@@ -38,7 +38,7 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Lỗi tải yêu cầu gần đây: $e');
+      debugPrint('Failed to load recent requests: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -119,24 +119,33 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
         badgeText = Colors.amber.shade700;
     }
 
-    // Lấy ngày giờ
+    // Date/time
     String dateStr = 'Unknown';
     final dt = _parseDate(request['created_at']);
     if (dt != null) {
       dateStr = '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     }
 
-    // Chi tiết sản phẩm
+    // Product details
     List<Widget> productDetailsWidgets = [];
-    if (request['products'] != null && request['products'] is List) {
-      final products = request['products'] as List;
-      if (products.isNotEmpty) {
-        for (var p in products) {
-          final productName = p['product_name'] ?? 'Unknown Product';
+    final dynamic rawList = (request['items'] is List)
+        ? request['items']
+        : (request['products'] is List)
+            ? request['products']
+            : null;
+
+    if (rawList is List) {
+      if (rawList.isNotEmpty) {
+        for (final raw in rawList) {
+          if (raw is! Map) continue;
+          final p = raw.cast<String, dynamic>();
+          final productName = (p['product_name'] ?? 'Unknown Product').toString();
           final quantity = p['quantity'] ?? 0;
+          final sku = (p['product_sku'] ?? p['sku'] ?? '').toString();
+          final skuSuffix = sku.isNotEmpty ? ' • $sku' : '';
           productDetailsWidgets.add(
             Text(
-              '$productName (x$quantity)',
+              '$productName$skuSuffix (x$quantity)',
               style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -144,10 +153,20 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
           );
         }
       } else {
-        productDetailsWidgets.add(Text('No items specified', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)));
+        productDetailsWidgets.add(
+          Text(
+            'No items specified',
+            style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+          ),
+        );
       }
     } else {
-      productDetailsWidgets.add(Text('No product data available', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)));
+      productDetailsWidgets.add(
+        Text(
+          'No product data available',
+          style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+        ),
+      );
     }
 
     return Container(
