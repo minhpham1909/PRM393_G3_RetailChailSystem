@@ -26,6 +26,7 @@ class AppRoutes {
   static const String revenueStatistics = '/admin/revenue';
   static const String storeManagement = '/admin/stores';
   static const String storeProductPerformance = '/admin/store-product-performance';
+  static const String lowStockMonitor = '/admin/low-stock';
 
   // Staff Routes (thêm sau)
   static const String staff = '/staff';

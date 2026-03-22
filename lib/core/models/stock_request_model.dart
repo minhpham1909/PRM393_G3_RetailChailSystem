@@ -11,6 +11,7 @@ class StockRequest {
   final DateTime createdAt;
   final DateTime? expectedDate;
   final DateTime? approvedAt;
+  final DateTime? receivedAt;
   final String notes;
   final List<Map<String, dynamic>> items;
 
@@ -25,6 +26,7 @@ class StockRequest {
     required this.createdAt,
     this.expectedDate,
     this.approvedAt,
+    this.receivedAt,
     required this.notes,
     required this.items,
   });
@@ -81,6 +83,7 @@ class StockRequest {
       createdAt: parseDate(data['created_at']) ?? DateTime.now(),
       expectedDate: parseDate(data['expected_date']),
       approvedAt: parseDate(data['approved_at']),
+      receivedAt: parseDate(data['received_at']),
       notes: (data['notes'] ?? '').toString(),
       items: parseItems(data),
     );

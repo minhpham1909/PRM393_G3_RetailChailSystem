@@ -8,6 +8,7 @@ import '../../../core/services/firestore_service.dart';
 import '../../../core/services/excel_export_service.dart';
 import '../../store_manager/reports/order_detail_screen.dart';
 import '../widgets/admin_app_bar.dart';
+import '../../../core/services/statistics_service.dart';
 
 enum GroupBy { day, month }
 
@@ -22,10 +23,12 @@ class RevenueStatisticsScreen extends StatefulWidget {
 class _RevenueStatisticsScreenState extends State<RevenueStatisticsScreen> {
   final FirestoreService _firestoreService = FirestoreService();
   final ExcelExportService _excelService = ExcelExportService();
+  final StatisticsService _statisticsService = StatisticsService();
 
   String _selectedStoreId = 'ALL';
   GroupBy _groupBy = GroupBy.day;
   bool _isExporting = false;
+  bool _isSyncing = false;
 
   Future<void> _exportToExcel(
     List<MapEntry<String, _RevenueData>> sortedData,
@@ -78,6 +81,29 @@ class _RevenueStatisticsScreenState extends State<RevenueStatisticsScreen> {
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _handleSync() async {
+    setState(() => _isSyncing = true);
+    try {
+      // Sync today and yesterday
+      await _statisticsService.aggregateDailyRevenue(DateTime.now());
+      await _statisticsService.aggregateDailyRevenue(DateTime.now().subtract(const Duration(days: 1)));
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✅ Daily stats aggregated successfully!'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ Sync failed: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
     }
   }
 
@@ -178,6 +204,13 @@ class _RevenueStatisticsScreenState extends State<RevenueStatisticsScreen> {
               backgroundColor: colorScheme.surface,
               appBar: AdminAppBar(
                 actions: [
+                  IconButton(
+                    onPressed: _isSyncing ? null : _handleSync,
+                    icon: _isSyncing 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.sync),
+                    tooltip: 'Sync Daily Stats',
+                  ),
                   IconButton(
                     onPressed: _isExporting 
                       ? null 
