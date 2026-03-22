@@ -224,8 +224,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 prefixIcon: Icons.mail_outline,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
-                                  if (value.isEmpty) return 'Please enter your email.';
-                                  if (!value.contains('@')) return 'Invalid email address.';
+                                  if (value.isEmpty)
+                                    return 'Please enter your email.';
+                                  if (!value.contains('@'))
+                                    return 'Invalid email address.';
                                   return null;
                                 },
                               ),
@@ -241,7 +243,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   );
                                 },
                                 validator: (v) {
-                                  if ((v ?? '').isEmpty) return 'Please enter your password.';
+                                  if ((v ?? '').isEmpty)
+                                    return 'Please enter your password.';
                                   return null;
                                 },
                               ),
@@ -305,8 +308,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(
                                 height: 52,
                                 child: OutlinedButton.icon(
-                                  onPressed: _isSubmitting ? null : _submitGoogle,
-                                  icon: const Icon(Icons.g_mobiledata, size: 26),
+                                  onPressed: _isSubmitting
+                                      ? null
+                                      : _submitGoogle,
+                                  icon: const Icon(
+                                    Icons.g_mobiledata,
+                                    size: 26,
+                                  ),
                                   label: Text(
                                     'CONTINUE WITH GOOGLE',
                                     style: Theme.of(context)
@@ -480,7 +488,7 @@ class _BrandHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'Prism Retail',
+          'Retail Chain System',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: -0.4,

@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../core/models/order_model.dart';
 import '../widgets/manager_app_bar.dart';
 import 'order_detail_screen.dart';
+import '../../../core/services/excel_export_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Store report screen.
 /// Shows revenue, supports day/month filtering, and lists invoices.
@@ -18,15 +20,48 @@ class StoreReportScreen extends StatefulWidget {
 
 class _StoreReportScreenState extends State<StoreReportScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final ExcelExportService _excelService = ExcelExportService();
 
   // Filter state
   DateTime _selectedDate = DateTime.now();
   String _filterMode = 'Day'; // 'Day' or 'Month'
+  String? _storeName;
+  String? _managerName;
+  bool _isExporting = false;
 
-  // Data
+  @override
+  void initState() {
+    super.initState();
+    _loadStoreName();
+  }
+
+  Future<void> _loadStoreName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final snap = await _firestoreService.db
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+      if (snap.docs.isNotEmpty) {
+        final userData = snap.docs.first.data();
+        final storeId = userData['store_id'];
+        final fullName = userData['full_name'] ?? userData['email'];
+        if (storeId != null) {
+          final storeDoc = await _firestoreService.db.collection('stores').doc(storeId).get();
+          if (mounted) {
+            setState(() {
+              _managerName = fullName;
+              if (storeDoc.exists) {
+                _storeName = storeDoc.data()?['name'];
+              }
+            });
+          }
+        }
+      }
+    }
+  }
 
   String _formatCurrency(double amount) {
-    // Use intl for consistent currency formatting.
     return NumberFormat.currency(
       locale: 'vi_VN',
       symbol: 'VND',
@@ -35,6 +70,11 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   }
 
   Future<void> _selectDate() async {
+    if (_filterMode == 'Month') {
+      await _showMonthPicker();
+      return;
+    }
+
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -44,8 +84,94 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        // Rebuild will be triggered by setState, which creates a new stream
       });
+    }
+  }
+
+  Future<void> _showMonthPicker() async {
+    final now = DateTime.now();
+    final months = List.generate(12, (index) => DateTime(now.year, index + 1));
+    
+    final selected = await showDialog<DateTime>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Month'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: months.length,
+            itemBuilder: (context, index) {
+              final month = months[index];
+              if (month.isAfter(now)) return const SizedBox.shrink();
+              
+              final isSelected = month.year == _selectedDate.year && month.month == _selectedDate.month;
+              return ListTile(
+                title: Text(DateFormat('MMMM yyyy').format(month)),
+                selected: isSelected,
+                trailing: isSelected ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(context, month),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null) {
+      setState(() => _selectedDate = selected);
+    }
+  }
+
+  Future<void> _exportToExcel(List<OrderModel> invoices) async {
+    if (invoices.isEmpty) return;
+    setState(() => _isExporting = true);
+    
+    try {
+      final exportData = invoices.map((invoice) {
+        // Use friendly short ID (last 6 chars, uppercase)
+        final docId = invoice.orderId;
+        final friendlyId = docId.length > 6 ? '#${docId.substring(docId.length - 6).toUpperCase()}' : '#$docId';
+
+        return {
+          'order_id': friendlyId,
+          'created_at': DateFormat('dd/MM/yyyy HH:mm').format(invoice.createdAt),
+          'payment_method': invoice.paymentMethod,
+          'total_amount': invoice.totalAmount,
+          'status': invoice.status,
+        };
+      }).toList();
+
+      final timestamp = DateFormat('yyyyMMdd').format(DateTime.now());
+      final period = _filterMode == 'Day' ? 'Day_$timestamp' : 'Month_${DateFormat('yyyyMM').format(_selectedDate)}';
+      final fileName = 'Revenue_${_storeName?.replaceAll(' ', '_') ?? 'Branch'}_$period';
+
+      await _excelService.exportDetailedInvoicesToExcel(
+        data: exportData,
+        fileName: fileName,
+        storeName: _storeName ?? 'Generic Branch',
+        managerName: _managerName ?? 'Store Manager',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report exported: $fileName.xlsx')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
     }
   }
 
@@ -53,22 +179,16 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Determine the filtered time range based on state.
     DateTime start;
     DateTime end;
     if (_filterMode == 'Day') {
-      start = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-      );
+      start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
       end = start.add(const Duration(days: 1));
     } else {
       start = DateTime(_selectedDate.year, _selectedDate.month, 1);
       end = DateTime(_selectedDate.year, _selectedDate.month + 1, 1);
     }
 
-    // Build the stream query.
     final ordersStream = _firestoreService.db
         .collection('orders')
         .where('status', isEqualTo: 'paid')
@@ -77,38 +197,36 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         .orderBy('created_at', descending: true)
         .snapshots();
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: const ManagerAppBar(),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: ordersStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Failed to load data: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            // Still show filters and summary with 0 values.
-            return _buildReportBody(context, [], 0);
-          }
+    return StreamBuilder<QuerySnapshot>(
+      stream: ordersStream,
+      builder: (context, snapshot) {
+        final invoices = snapshot.hasData 
+            ? snapshot.data!.docs.map((doc) => OrderModel.fromFirestore(doc)).toList() 
+            : <OrderModel>[];
+        final totalRevenue = invoices.fold(0.0, (sum, order) => sum + order.totalAmount);
 
-          final invoices = snapshot.data!.docs
-              .map((doc) => OrderModel.fromFirestore(doc))
-              .toList();
-          final totalRevenue = invoices.fold(
-            0.0,
-            (sum, order) => sum + order.totalAmount,
-          );
-
-          return _buildReportBody(context, invoices, totalRevenue);
-        },
-      ),
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          appBar: ManagerAppBar(
+            actions: [
+              IconButton(
+                icon: _isExporting 
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.download_outlined),
+                onPressed: (_isExporting || invoices.isEmpty) ? null : () => _exportToExcel(invoices),
+              ),
+            ],
+          ),
+          body: snapshot.connectionState == ConnectionState.waiting
+              ? const Center(child: CircularProgressIndicator())
+              : snapshot.hasError
+                  ? Center(child: Text('Error: ${snapshot.error}'))
+                  : _buildReportBody(context, invoices, totalRevenue),
+        );
+      },
     );
   }
 
-  /// Widget containing the report screen body.
   Widget _buildReportBody(
     BuildContext context,
     List<OrderModel> invoices,
@@ -116,13 +234,11 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final chartSpots = _prepareChartData(invoices, _filterMode, _selectedDate);
-    // Find max Y to scale the chart.
     final maxY = chartSpots.fold<double>(
       0.0,
       (max, spot) => spot.y > max ? spot.y : max,
     );
 
-    // CustomScrollView helps avoid overflow with long layouts.
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _buildFilterSection(context)),
@@ -170,7 +286,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
     );
   }
 
-  /// Prepare chart data from invoice list.
   List<FlSpot> _prepareChartData(
     List<OrderModel> invoices,
     String filterMode,
@@ -183,7 +298,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         selectedDate.year,
         selectedDate.month,
       );
-      // Initialize map for all days in month, revenue = 0.
       final Map<int, double> dailyRevenue = {
         for (var i = 1; i <= daysInMonth; i++) i: 0.0,
       };
@@ -199,8 +313,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           .map((e) => FlSpot(e.key.toDouble(), e.value))
           .toList();
     } else {
-      // Day
-      // Initialize map for all hours in day, revenue = 0.
       final Map<int, double> hourlyRevenue = {
         for (var i = 0; i < 24; i++) i: 0.0,
       };
@@ -224,7 +336,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
         children: [
           Row(
             children: [
-              // Day/Month Toggle
               Expanded(
                 child: SegmentedButton<String>(
                   segments: const [
@@ -243,13 +354,11 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                   onSelectionChanged: (val) {
                     setState(() {
                       _filterMode = val.first;
-                      // Rebuild will be triggered by setState, which creates a new stream
                     });
                   },
                 ),
               ),
               const SizedBox(width: 12),
-              // Date Picker Button
               IconButton.filledTonal(
                 onPressed: _selectDate,
                 icon: const Icon(Icons.event),
@@ -259,8 +368,8 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
           const SizedBox(height: 12),
           Text(
             _filterMode == 'Day'
-                ? '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'
-                : 'Month ${_selectedDate.month}/${_selectedDate.year}',
+                ? DateFormat('dd/MM/yyyy').format(_selectedDate)
+                : DateFormat('MM/yyyy').format(_selectedDate),
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
@@ -275,7 +384,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0), // Thêm margin top
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -351,7 +460,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Format Y-axis labels (e.g., 1,000,000 -> 1M)
     String formatYAxis(double value) {
       if (value >= 1000000) {
         return '${(value / 1000000).toStringAsFixed(1)}M';
@@ -361,7 +469,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       return value.toStringAsFixed(0);
     }
 
-    // Build X-axis labels.
     Widget bottomTitleWidgets(double value, TitleMeta meta) {
       final style = TextStyle(
         fontSize: 10,
@@ -369,15 +476,12 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       );
       String text;
       if (filterMode == 'Month') {
-        // Show labels for days 1, 5, 10, 15, ...
         if (value.toInt() % 5 == 0 || value.toInt() == 1) {
           text = value.toInt().toString();
         } else {
           return const SizedBox();
         }
       } else {
-        // Day
-        // Show labels at 0h, 6h, 12h, 18h.
         if (value.toInt() % 6 == 0) {
           text = '${value.toInt()}h';
         } else {
@@ -404,7 +508,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
       ),
       child: LineChart(
         LineChartData(
-          // Tooltip config.
           lineTouchData: LineTouchData(
             handleBuiltInTouches: true,
             touchTooltipData: LineTouchTooltipData(
@@ -436,7 +539,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               },
             ),
           ),
-          // Grid.
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
@@ -447,7 +549,6 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               );
             },
           ),
-          // Axis titles.
           titlesData: FlTitlesData(
             show: true,
             rightTitles: const AxisTitles(
@@ -470,7 +571,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                 reservedSize: 40,
                 getTitlesWidget: (value, meta) {
                   if (value == 0 || value >= meta.max)
-                    return const SizedBox(); // Hide at 0 and top.
+                    return const SizedBox();
                   return Text(
                     formatYAxis(value),
                     style: TextStyle(
@@ -483,9 +584,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
               ),
             ),
           ),
-          // Border.
           borderData: FlBorderData(show: false),
-          // Axis min/max.
           minX: filterMode == 'Month' ? 1 : 0,
           maxX: filterMode == 'Month'
               ? DateUtils.getDaysInMonth(
@@ -494,11 +593,7 @@ class _StoreReportScreenState extends State<StoreReportScreen> {
                 ).toDouble()
               : 23,
           minY: 0,
-          maxY: maxY == 0
-              ? 100000
-              : maxY *
-                1.2, // Use a default if maxY is 0.
-            // Line data.
+          maxY: maxY == 0 ? 100000 : maxY * 1.2,
           lineBarsData: [
             LineChartBarData(
               spots: spots,

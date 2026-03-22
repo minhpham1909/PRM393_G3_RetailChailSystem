@@ -9,8 +9,13 @@ import '../../../core/services/firestore_service.dart';
 /// - Tap to open Profile
 class AdminAppBar extends StatefulWidget implements PreferredSizeWidget {
   final bool showBackButton;
+  final List<Widget>? actions;
 
-  const AdminAppBar({super.key, this.showBackButton = false});
+  const AdminAppBar({
+    super.key,
+    this.showBackButton = false,
+    this.actions,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -132,8 +137,9 @@ class _AdminAppBarState extends State<AdminAppBar> {
           ),
         ),
       ),
-      actions: const [
-        SizedBox(width: 8),
+      actions: [
+        ...?widget.actions,
+        const SizedBox(width: 8),
       ],
     );
   }

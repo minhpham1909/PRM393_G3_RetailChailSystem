@@ -9,8 +9,9 @@ import '../../../core/services/firestore_service.dart';
 /// - Tap to open Profile
 class ManagerAppBar extends StatefulWidget implements PreferredSizeWidget {
   final bool showBackButton;
+  final List<Widget>? actions;
 
-  const ManagerAppBar({super.key, this.showBackButton = false});
+  const ManagerAppBar({super.key, this.showBackButton = false, this.actions});
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -159,6 +160,7 @@ class _ManagerAppBarState extends State<ManagerAppBar> {
         ),
       ),
       actions: [
+        if (widget.actions != null) ...widget.actions!,
         // Settings
         IconButton(
           icon: const Icon(Icons.settings_outlined, color: Colors.black87),

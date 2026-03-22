@@ -15,11 +15,13 @@ class SelectedProduct {
 class ProductSelectionModal extends StatefulWidget {
   final List<SelectedProduct> initialSelected;
   final String actionLabel;
+  final String? storeId;
 
   const ProductSelectionModal({
     super.key, 
     required this.initialSelected,
     this.actionLabel = 'Add Items',
+    this.storeId,
   });
 
   @override
@@ -29,8 +31,11 @@ class ProductSelectionModal extends StatefulWidget {
 class _ProductSelectionModalState extends State<ProductSelectionModal> {
   final FirestoreService _firestoreService = FirestoreService();
   StreamSubscription? _productsSubscription;
+  StreamSubscription? _inventorySubscription;
+  
   List<ProductModel> _allProducts = [];
   List<ProductModel> _filteredProducts = [];
+  final Map<String, int> _branchStockMap = {}; // SKU -> Stock record
   final List<String> _categories = ['All Categories'];
   
   String _searchQuery = '';
@@ -54,13 +59,16 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
   @override
   void dispose() {
     _productsSubscription?.cancel();
+    _inventorySubscription?.cancel();
     super.dispose();
   }
 
-  /// Listen to the product list from Firestore in real-time.
+  /// Listen to the product list and inventory list from Firestore.
   void _listenToProducts() {
     setState(() => _isLoading = true);
-    _productsSubscription = _firestoreService.db.collection('products').orderBy('name').snapshots().listen((snapshot) {
+    
+    // 1. Listen to Master Data (Products)
+    _productsSubscription = _firestoreService.streamCollection('products').listen((snapshot) {
       final products = snapshot.docs.map((doc) => ProductModel.fromFirestore(doc)).toList();
       final cats = products.map((p) => p.category).toSet().toList();
       cats.sort();
@@ -68,19 +76,44 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
       if (mounted) {
         setState(() {
           _allProducts = products;
-          // Keep current category filter and search query.
           _categories.clear();
           _categories.add('All Categories');
           _categories.addAll(cats);
-          _isLoading = false;
         });
-        // Re-apply filters after receiving new data.
         _filterProducts();
+        if (widget.storeId == null) {
+          setState(() => _isLoading = false);
+        }
       }
-    }, onError: (e) {
-      debugPrint('Failed to load products for modal: $e');
-      if (mounted) setState(() => _isLoading = false);
     });
+
+    // 2. Listen to Branch Inventory if storeId is provided
+    if (widget.storeId != null) {
+      _inventorySubscription = _firestoreService.db
+          .collection('inventory')
+          .where('store_id', isEqualTo: widget.storeId)
+          .snapshots()
+          .listen((snapshot) {
+        if (mounted) {
+          setState(() {
+            _branchStockMap.clear();
+            for (var doc in snapshot.docs) {
+              final data = doc.data();
+              final sku = data['product_sku'];
+              final stock = data['stock'] ?? 0;
+              if (sku != null) {
+                _branchStockMap[sku] = (stock as num).toInt();
+              }
+            }
+            _isLoading = false;
+          });
+          _filterProducts();
+        }
+      }, onError: (e) {
+        debugPrint('Failed to load inventory for modal: $e');
+        if (mounted) setState(() => _isLoading = false);
+      });
+    }
   }
   
   void _filterProducts() {
@@ -90,8 +123,14 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
         final matchSearch = _searchQuery.isEmpty || 
             p.name.toLowerCase().contains(_searchQuery.toLowerCase()) || 
             p.sku.toLowerCase().contains(_searchQuery.toLowerCase());
+            
+        // Get stock level (prefer branch stock, fallback to product global stock)
+        final stock = widget.storeId != null 
+            ? (_branchStockMap[p.sku] ?? 0) 
+            : p.stock;
+
         // Only show products in stock (stock > 0).
-        return matchCategory && matchSearch && p.stock > 0;
+        return matchCategory && matchSearch && stock > 0;
       }).toList();
     });
   }
@@ -120,7 +159,7 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20), // Rounded corners
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
@@ -210,10 +249,25 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
                           color: colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.inventory_2, color: colorScheme.onSurfaceVariant),
+                        child: product.image != null && product.image!.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  product.image!, 
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.inventory_2),
+                                ),
+                              )
+                            : const Icon(Icons.inventory_2),
                       ),
-                      title: Text(product.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                      subtitle: Text('SKU: ${product.sku} | ${product.category}', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                      title: Text(product.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      subtitle: Row(
+                        children: [
+                          Text('SKU: ${product.sku}', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                          const SizedBox(width: 8),
+                          _buildStockBadge(product),
+                        ],
+                      ),
                       trailing: Checkbox(
                         value: isSelected,
                         onChanged: (val) => _toggleProduct(product),
@@ -249,6 +303,31 @@ class _ProductSelectionModalState extends State<ProductSelectionModal> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStockBadge(ProductModel product) {
+    final stock = widget.storeId != null 
+        ? (_branchStockMap[product.sku] ?? 0) 
+        : product.stock;
+    
+    final color = stock <= 5 ? Colors.red : Colors.green[700];
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: color?.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color?.withValues(alpha: 0.5) ?? Colors.grey),
+      ),
+      child: Text(
+        'Stock: $stock',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }
