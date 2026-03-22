@@ -41,6 +41,7 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
 
           final pending = requests.where((r) => r.status == 'pending').length;
           final approved = requests.where((r) => r.status == 'approved').length;
+          final received = requests.where((r) => r.status == 'received').length;
           final rejected = requests.where((r) => r.status == 'rejected').length;
 
           final filtered = _filterStatus == 'all'
@@ -53,33 +54,50 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
                 // Summary Cards
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          context,
-                          'PENDING',
-                          pending.toString(),
-                          Colors.amber,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildSummaryCard(
+                              context,
+                              'PENDING',
+                              pending.toString(),
+                              Colors.amber,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildSummaryCard(
+                              context,
+                              'APPROVED',
+                              approved.toString(),
+                              Colors.green,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          context,
-                          'APPROVED',
-                          approved.toString(),
-                          Colors.green,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          context,
-                          'REJECTED',
-                          rejected.toString(),
-                          Colors.red,
-                        ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildSummaryCard(
+                              context,
+                              'RECEIVED',
+                              received.toString(),
+                              Colors.teal,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildSummaryCard(
+                              context,
+                              'REJECTED',
+                              rejected.toString(),
+                              Colors.red,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -96,6 +114,8 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
                         _buildFilterChip('Pending', 'pending'),
                         const SizedBox(width: 8),
                         _buildFilterChip('Approved', 'approved'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('Received', 'received'),
                         const SizedBox(width: 8),
                         _buildFilterChip('Rejected', 'rejected'),
                       ],
@@ -132,7 +152,7 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(
                                 leading: _buildStatusIcon(request.status),
-                                title: Text('Request from ${request.storeId}'),
+                                title: Text(request.storeName ?? 'Store: ${request.storeId}'),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -217,6 +237,15 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
         padding: const EdgeInsets.all(8),
         child: const Icon(Icons.cancel, color: Colors.red, size: 24),
       );
+    } else if (status == 'received') {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.teal.withOpacity(0.2),
+          shape: BoxShape.circle,
+        ),
+        padding: const EdgeInsets.all(8),
+        child: const Icon(Icons.inventory_2, color: Colors.teal, size: 24),
+      );
     }
     return Container(
       decoration: BoxDecoration(
@@ -242,6 +271,11 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
         bgColor = Colors.red;
         textColor = Colors.white;
         text = 'Rejected';
+        break;
+      case 'received':
+        bgColor = Colors.teal;
+        textColor = Colors.white;
+        text = 'Received';
         break;
       default:
         bgColor = Colors.amber;

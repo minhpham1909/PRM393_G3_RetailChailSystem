@@ -98,4 +98,49 @@ class FirestoreService {
 
     return query;
   }
+
+  // ==================== OPERATIONALS ====================
+
+  /// Confirms receipt of a stock request.
+  /// Updates request status to 'received' and increments branch inventory.
+  Future<void> confirmStockRequestReceipt(String requestId, String storeId, List<dynamic> items) async {
+    return _db.runTransaction((transaction) async {
+      // 1. Update Request Status
+      final requestRef = _db.collection('stock_requests').doc(requestId);
+      transaction.update(requestRef, {
+        'status': 'received',
+        'received_at': FieldValue.serverTimestamp(),
+      });
+
+      // 2. Update Inventory for each item
+      for (final item in items) {
+        final productSku = item['product_sku'] ?? item['sku'];
+        final quantity = (item['quantity'] ?? 0) as num;
+
+        // Find inventory record for this store and product SKU
+        final inventoryQuery = await _db.collection('inventory')
+            .where('store_id', isEqualTo: storeId)
+            .where('product_sku', isEqualTo: productSku)
+            .limit(1)
+            .get();
+
+        if (inventoryQuery.docs.isNotEmpty) {
+          final inventoryRef = inventoryQuery.docs.first.reference;
+          transaction.update(inventoryRef, {
+            'stock': FieldValue.increment(quantity),
+            'last_updated': FieldValue.serverTimestamp(),
+          });
+        } else {
+          // If no inventory record exists, create one (unlikely but safe)
+          final newInventoryRef = _db.collection('inventory').doc();
+          transaction.set(newInventoryRef, {
+            'store_id': storeId,
+            'product_sku': productSku,
+            'stock': quantity,
+            'last_updated': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    });
+  }
 }
