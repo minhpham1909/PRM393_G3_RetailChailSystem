@@ -22,7 +22,9 @@ class AppRoutes {
   static const String adminProfile = '/admin/profile';
   static const String accountManagement = '/admin/account-management';
   static const String productManagement = '/admin/product-management';
-  static const String importRequestManagement = '/admin/import-request-management';
+  static const String importRequestManagement = '/admin/import_requests';
+  static const String revenueStatistics = '/admin/revenue';
+  static const String storeManagement = '/admin/stores';
   static const String storeProductPerformance = '/admin/store-product-performance';
 
   // Staff Routes (thêm sau)

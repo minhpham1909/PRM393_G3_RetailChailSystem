@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/models/store_model.dart';
 import '../../../core/services/firestore_service.dart';
+import '../widgets/admin_app_bar.dart';
 
 class _ProductPerf {
   int soldQty = 0;
@@ -54,10 +55,7 @@ class _StoreProductPerformanceScreenState
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Store Product Performance'),
-        elevation: 0,
-      ),
+      appBar: const AdminAppBar(),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _firestoreService.db.collection('stores').snapshots(),
         builder: (context, storesSnap) {
@@ -72,6 +70,12 @@ class _StoreProductPerformanceScreenState
               .map((d) => StoreModel.fromFirestore(d))
               .toList();
           stores.sort((a, b) => a.name.compareTo(b.name));
+          
+          stores.insert(0, StoreModel(
+            storeId: 'ALL',
+            name: 'All Stores',
+            address: '',
+          ));
 
           if (stores.isEmpty) {
             return const Center(child: Text('No stores found in the system'));
@@ -97,10 +101,12 @@ class _StoreProductPerformanceScreenState
               products.sort((a, b) => a.name.compareTo(b.name));
 
               return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: _firestoreService.db
-                    .collection('orders')
-                  .where('store_id', isEqualTo: effectiveStoreId)
-                    .snapshots(),
+                stream: effectiveStoreId == 'ALL'
+                    ? _firestoreService.db.collection('orders').snapshots()
+                    : _firestoreService.db
+                        .collection('orders')
+                        .where('store_id', isEqualTo: effectiveStoreId)
+                        .snapshots(),
                 builder: (context, ordersSnap) {
                   if (ordersSnap.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -246,10 +252,20 @@ class _StoreProductPerformanceScreenState
                                     color: colorScheme.surfaceContainer,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: Icon(
-                                    Icons.inventory_2_outlined,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                                  child: product.image != null && product.image!.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.network(
+                                            product.image!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                Icon(Icons.inventory_2_outlined, color: colorScheme.onSurfaceVariant),
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.inventory_2_outlined,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
                                 ),
                                 title: Text(
                                   product.name,

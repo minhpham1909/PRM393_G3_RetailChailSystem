@@ -1,56 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/constants/app_routes.dart';
-import '../../../core/services/auth_service.dart';
+import '../../../../core/constants/app_routes.dart';
+import '../widgets/admin_app_bar.dart';
 
-/// Admin placeholder (temporary)
-/// For testing: signing in as admin lands on this screen.
-class AdminPlaceholderScreen extends StatelessWidget {
-  const AdminPlaceholderScreen({super.key});
+/// Admin Dashboard Screen
+/// Displays system KPIs, quick actions, and system health status.
+class AdminDashboardScreen extends StatelessWidget {
+  final ValueChanged<int>? onNavigate;
+
+  const AdminDashboardScreen({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: const Text('Retail Management'),
-        leading: IconButton(
-          tooltip: 'Admin profile',
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.adminProfile),
-          icon: CircleAvatar(
-            backgroundColor: colorScheme.primary.withAlpha(26),
-            child: Icon(
-              Icons.person,
-              color: colorScheme.primary,
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
-            tooltip: 'Notifications',
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value != 'logout') return;
-              await authService.signOut();
-              if (context.mounted) {
-                Navigator.popUntil(context, (r) => r.isFirst);
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'logout',
-                child: Text('Sign out'),
-              ),
-            ],
-          ),
-        ],
-      ),
+      appBar: const AdminAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -113,12 +78,15 @@ class AdminPlaceholderScreen extends StatelessWidget {
             _buildNavTile(
               context,
               icon: Icons.people_alt_outlined,
-              title: 'User Management',
+              title: 'Manager Store (MS)',
               subtitle: 'Control access levels',
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.accountManagement,
-              ),
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(1); // Navigate to Users tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.accountManagement);
+                }
+              },
             ),
             const SizedBox(height: 10),
             _buildNavTile(
@@ -126,10 +94,13 @@ class AdminPlaceholderScreen extends StatelessWidget {
               icon: Icons.inventory_2_outlined,
               title: 'Product Master',
               subtitle: 'Global SKU control',
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.productManagement,
-              ),
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(2); // Navigate to Products tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.productManagement);
+                }
+              },
             ),
             const SizedBox(height: 10),
             _buildNavTile(
@@ -137,10 +108,13 @@ class AdminPlaceholderScreen extends StatelessWidget {
               icon: Icons.local_shipping_outlined,
               title: 'Central Warehouse',
               subtitle: 'Process store import requests',
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.importRequestManagement,
-              ),
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(3); // Navigate to Warehouse tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.importRequestManagement);
+                }
+              },
             ),
             const SizedBox(height: 10),
             _buildNavTile(
@@ -148,50 +122,44 @@ class AdminPlaceholderScreen extends StatelessWidget {
               icon: Icons.query_stats_outlined,
               title: 'Store Product Performance',
               subtitle: 'Track running vs no-sales SKUs',
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.storeProductPerformance,
-              ),
-            ),
-            const SizedBox(height: 18),
-            _buildSectionHeader(
-              context,
-              title: 'System Activity',
-              trailing: TextButton(
-                onPressed: () {},
-                child: const Text('View all logs'),
-              ),
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(4); // Navigate to Reports tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.storeProductPerformance);
+                }
+              },
             ),
             const SizedBox(height: 10),
-            _buildActivityCard(
+            _buildNavTile(
               context,
-              items: const [
-                _ActivityItem(
-                  icon: Icons.verified_user_outlined,
-                  title: 'New admin role assigned',
-                  subtitle: '24 minutes ago • Security Log',
-                ),
-                _ActivityItem(
-                  icon: Icons.price_change_outlined,
-                  title: 'Global Price Update',
-                  subtitle: '1 hour ago • Product Master',
-                ),
-                _ActivityItem(
-                  icon: Icons.store_mall_directory_outlined,
-                  title: 'Store #142 went online',
-                  subtitle: '3 hours ago • Store Management',
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            _buildSectionHeader(
-              context,
-              title: 'System Health',
+              icon: Icons.show_chart_outlined,
+              title: 'Revenue Statistics',
+              subtitle: 'Track income by day/month',
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(5); // Navigate to Revenue Stats tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.revenueStatistics);
+                }
+              },
             ),
             const SizedBox(height: 10),
-            _buildHealthCard(context),
+            _buildNavTile(
+              context,
+              icon: Icons.store_mall_directory_outlined,
+              title: 'Store Management',
+              subtitle: 'Manage branches & view inventory',
+              onTap: () {
+                if (onNavigate != null) {
+                  onNavigate!(6); // Navigate to Store Management tab
+                } else {
+                  Navigator.pushNamed(context, AppRoutes.storeManagement);
+                }
+              },
+            ),
             const SizedBox(height: 18),
-            _buildUptimeCard(context),
+            // Removed System Activity and System Health per user request
           ],
         ),
       ),
@@ -418,157 +386,4 @@ class AdminPlaceholderScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityCard(
-    BuildContext context, {
-    required List<_ActivityItem> items,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      elevation: 0,
-      child: Column(
-        children: [
-          for (int i = 0; i < items.length; i++)
-            Column(
-              children: [
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    child: Icon(items[i].icon, color: colorScheme.onSurfaceVariant),
-                  ),
-                  title: Text(
-                    items[i].title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(items[i].subtitle),
-                ),
-                if (i != items.length - 1) const Divider(height: 0),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHealthCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    Widget row({
-      required String name,
-      required String status,
-      required Color dot,
-      required Color statusColor,
-    }) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              height: 8,
-              width: 8,
-              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            Text(
-              status,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: statusColor,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Card(
-      elevation: 0,
-      child: Column(
-        children: [
-          row(
-            name: 'Cloud Infrastructure',
-            status: 'STABLE',
-            dot: colorScheme.tertiary,
-            statusColor: colorScheme.tertiary,
-          ),
-          const Divider(height: 0),
-          row(
-            name: 'Inventory Sync',
-            status: 'SYNCED',
-            dot: colorScheme.tertiary,
-            statusColor: colorScheme.tertiary,
-          ),
-          const Divider(height: 0),
-          row(
-            name: 'Payment Gateway',
-            status: 'LATENCY',
-            dot: colorScheme.error,
-            statusColor: colorScheme.error,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUptimeCard(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.primary,
-              colorScheme.primary.withAlpha(220),
-            ],
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'SERVER UPTIME',
-              style: TextStyle(
-                color: colorScheme.onPrimary,
-                letterSpacing: 1.2,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '99.98%',
-              style: TextStyle(
-                color: colorScheme.onPrimary,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActivityItem {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _ActivityItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
 }

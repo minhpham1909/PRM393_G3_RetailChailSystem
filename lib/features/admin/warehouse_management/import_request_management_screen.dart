@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/firestore_service.dart';
+import '../widgets/admin_app_bar.dart';
 
 class StockRequest {
   final String requestId;
@@ -99,10 +100,7 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Stock import requests'),
-        elevation: 0,
-      ),
+      appBar: const AdminAppBar(),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestoreService.db
             .collection('stock_requests')

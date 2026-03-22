@@ -13,13 +13,15 @@ import 'features/admin/profile/admin_profile_screen.dart';
 import 'features/admin/user_management/account_management_screen.dart';
 import 'features/admin/product_management/product_management_screen.dart';
 import 'features/admin/warehouse_management/import_request_management_screen.dart';
+import 'features/admin/store_management/store_management_screen.dart';
 import 'features/admin/reports/store_product_performance_screen.dart';
+import 'features/admin/reports/revenue_statistics_screen.dart';
 import 'features/store_manager/inventory/recent_requests_screen.dart';
 import 'features/store_manager/inventory/product_detail_screen.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
-import 'features/auth/screens/admin_placeholder_screen.dart';
+import 'features/admin/admin_main_screen.dart';
 import 'features/auth/widgets/protected_route.dart';
 
 /// Điểm khởi đầu ứng dụng Retail Chain Management System
@@ -97,7 +99,7 @@ class RCMSApp extends StatelessWidget {
         // ===== Routes Admin =====
         AppRoutes.admin: (context) => const ProtectedRoute(
               allowedRoles: ['admin'],
-              child: AdminPlaceholderScreen(),
+              child: AdminMainScreen(),
             ),
         AppRoutes.adminProfile: (context) => const ProtectedRoute(
               allowedRoles: ['admin'],
@@ -118,6 +120,14 @@ class RCMSApp extends StatelessWidget {
         AppRoutes.storeProductPerformance: (context) => const ProtectedRoute(
               allowedRoles: ['admin'],
               child: StoreProductPerformanceScreen(),
+            ),
+        AppRoutes.revenueStatistics: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: RevenueStatisticsScreen(),
+            ),
+        AppRoutes.storeManagement: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: StoreManagementScreen(),
             ),
       },
     );

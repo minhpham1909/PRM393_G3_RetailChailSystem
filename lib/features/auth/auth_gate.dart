@@ -56,15 +56,17 @@ class _AuthGateState extends State<AuthGate> {
       return;
     }
 
-    // Tìm account theo email trong collection users
+    // Tìm account theo email trong collection users (luôn dùng lowercase để tránh lỗi Case Sensitive)
     try {
+      final normalizedEmail = user.email?.toLowerCase();
+      
       final snap = await _firestore
-          .queryCollection('users', field: 'email', isEqualTo: user.email)
+          .queryCollection('users', field: 'email', isEqualTo: normalizedEmail)
           .limit(1)
           .get();
 
       if (snap.docs.isEmpty) {
-        final localRole = await _findLocalRoleByEmail(user.email);
+        final localRole = await _findLocalRoleByEmail(normalizedEmail);
         if (!mounted) return;
 
         if (localRole == 'admin') {
@@ -83,7 +85,14 @@ class _AuthGateState extends State<AuthGate> {
         return;
       }
 
-      final userModel = UserModel.fromFirestore(snap.docs.first);
+      final doc = snap.docs.first;
+      final userModel = UserModel.fromFirestore(doc);
+      
+      // Auto-Link UID: Nếu là tài khoản Google vừa đăng nhập lần đầu (chưa có UID trong Firestore)
+      // thì chúng ta cập nhật UID vào để đồng bộ sau này.
+      if (userModel.authMethod == 'google' && (userModel.authUid == null || userModel.authUid!.isEmpty)) {
+        await doc.reference.update({'auth_uid': user.uid});
+      }
 
       if (!mounted) return;
       if (userModel.role == 'admin') {

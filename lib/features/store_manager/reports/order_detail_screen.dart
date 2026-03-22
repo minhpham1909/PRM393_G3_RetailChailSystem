@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:project_prm393/core/models/product_model.dart';
-import 'package:project_prm393/core/services/firestore_service.dart';
-import 'package:project_prm393/core/services/printing_service.dart';
+import 'package:retail_chain_system/core/models/product_model.dart';
+import 'package:retail_chain_system/core/services/firestore_service.dart';
+import 'package:retail_chain_system/core/services/printing_service.dart';
 import '../../../core/models/order_model.dart';
 
 /// Invoice detail screen.

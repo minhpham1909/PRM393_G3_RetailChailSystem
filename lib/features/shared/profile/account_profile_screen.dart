@@ -42,7 +42,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
       if (user != null && user.email != null) {
         final userSnap = await _db
             .collection('users')
-            .where('email', isEqualTo: user.email)
+            .where('email', isEqualTo: user.email?.toLowerCase())
             .limit(1)
             .get();
 
@@ -535,18 +535,6 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 border: Border.all(color: colorScheme.primary, width: 2),
               ),
               child: Icon(Icons.person, size: 50, color: colorScheme.primary),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-              ),
             ),
           ],
         ),

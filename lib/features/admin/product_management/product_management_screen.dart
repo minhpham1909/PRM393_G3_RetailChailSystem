@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/services/firestore_service.dart';
+import '../widgets/admin_app_bar.dart';
 
 enum _ProductMenuAction { details, edit, delete }
 
@@ -19,10 +20,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Product Management'),
-        elevation: 0,
-      ),
+      appBar: const AdminAppBar(),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestoreService.db.collection('products').snapshots(),
         builder: (context, snapshot) {
