@@ -142,6 +142,20 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+                if (request.status == 'approved' || request.status == 'in_transit')
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => _handleConfirmReceipt(request),
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: const Text('Confirm Goods Receipt'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -155,6 +169,50 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleConfirmReceipt(StockRequest request) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Receipt'),
+        content: const Text('Are you sure you have received all items in this request? This will update your store inventory.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirm')),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      if (!mounted) return;
+      // Close the details dialog before processing
+      Navigator.pop(context);
+      
+      setState(() => _isLoading = true);
+      try {
+        await _firestoreService.confirmStockRequestReceipt(
+          request.requestId,
+          request.storeId,
+          request.items,
+        );
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('✅ Inventory updated successfully!'), backgroundColor: Colors.green),
+          );
+          _loadRecentRequests();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('❌ Error: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {
@@ -194,6 +252,11 @@ class _RecentRequestsScreenState extends State<RecentRequestsScreen> {
         borderColor = colorScheme.error.withOpacity(0.4);
         badgeBg = colorScheme.errorContainer;
         badgeText = colorScheme.error;
+        break;
+      case 'received':
+        borderColor = Colors.teal.withOpacity(0.4);
+        badgeBg = Colors.teal.shade50;
+        badgeText = Colors.teal.shade700;
         break;
       default:
         borderColor = Colors.amber.withOpacity(0.4);

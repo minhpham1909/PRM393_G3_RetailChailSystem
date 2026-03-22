@@ -23,6 +23,7 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/forgot_password_screen.dart';
 import 'features/admin/admin_main_screen.dart';
 import 'features/auth/widgets/protected_route.dart';
+import 'features/admin/reports/low_stock_monitor_screen.dart';
 
 /// Điểm khởi đầu ứng dụng Retail Chain Management System
 /// Khởi tạo Firebase và chạy ứng dụng
@@ -128,6 +129,10 @@ class RCMSApp extends StatelessWidget {
         AppRoutes.storeManagement: (context) => const ProtectedRoute(
               allowedRoles: ['admin'],
               child: StoreManagementScreen(),
+            ),
+        AppRoutes.lowStockMonitor: (context) => const ProtectedRoute(
+              allowedRoles: ['admin'],
+              child: LowStockMonitorScreen(),
             ),
       },
     );

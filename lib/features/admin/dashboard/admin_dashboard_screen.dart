@@ -158,6 +158,16 @@ class AdminDashboardScreen extends StatelessWidget {
                 }
               },
             ),
+            const SizedBox(height: 10),
+            _buildNavTile(
+              context,
+              icon: Icons.notifications_active_outlined,
+              title: 'Low Stock Monitor',
+              subtitle: 'Global inventory alerts',
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.lowStockMonitor);
+              },
+            ),
             const SizedBox(height: 18),
             // Removed System Activity and System Health per user request
           ],
