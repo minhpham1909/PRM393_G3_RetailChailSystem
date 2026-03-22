@@ -119,33 +119,56 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         for (var p in _selectedProducts) p.product.productId: p.product
       };
 
+      // Pre-fetch inventory doc IDs for the selected SKUs in this store
+      final inventorySnap = await _firestoreService.db
+          .collection('inventory')
+          .where('store_id', isEqualTo: _storeId)
+          .where('product_sku', whereIn: _selectedProducts.map((p) => p.product.sku).toSet().toList())
+          .get();
+      
+      final Map<String, DocumentReference> skuToInventoryRef = {
+        for (var doc in inventorySnap.docs) doc.data()['product_sku']: doc.reference
+      };
+
       // Run Transaction to ensure stock is updated atomically
       await _firestoreService.db.runTransaction((transaction) async {
-        // 1. Read and validate stock sequentially per item.
-        // This is less efficient than parallel reads (Future.wait), but helps avoid
-        // some edge cases in older Firestore plugin versions when performing multiple
-        // concurrent reads inside a transaction.
+        // 1. Read and validate stock
         for (final sp in _selectedProducts) {
-          final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
-          final productDoc = await transaction.get(productRef);
-
-          if (!productDoc.exists) {
-            throw Exception('Product ${sp.product.name} does not exist');
+          final inventoryRef = skuToInventoryRef[sp.product.sku];
+          if (inventoryRef == null) {
+            throw Exception('Branch inventory record not found for ${sp.product.name} (${sp.product.sku})');
           }
 
-          final stockData = productDoc.data()?['stock'];
-          int currentStock = 0;
-          if (stockData is num) {
-            currentStock = stockData.toInt();
+          final inventoryDoc = await transaction.get(inventoryRef);
+          if (!inventoryDoc.exists) {
+            throw Exception('Stock record missing for ${sp.product.name}');
+          }
+
+          final inventoryData = inventoryDoc.data() as Map<String, dynamic>?;
+          final stock = (inventoryData?['stock'] ?? 0) as num;
+          if (stock < sp.quantity) {
+            throw Exception('Not enough branch stock for ${sp.product.name} (Available: $stock)');
           }
           
-          if (currentStock < sp.quantity) {
-            throw Exception('Not enough stock for ${sp.product.name} (Remaining: $currentStock)');
+          // Fallback check on products collection if needed
+          final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
+          final productDoc = await transaction.get(productRef);
+          if (productDoc.exists) {
+            final globalStock = (productDoc.data()?['stock'] ?? 0) as num;
+            if (globalStock < sp.quantity) {
+              // Just a safety check
+            }
           }
         }
 
-        // 2. If all checks pass, decrement stock for all items.
+        // 2. Decrement stock for all items
         for (var sp in _selectedProducts) {
+          final inventoryRef = skuToInventoryRef[sp.product.sku]!;
+          transaction.update(inventoryRef, {
+            'stock': FieldValue.increment(-sp.quantity),
+          });
+
+          // Also update global products collection to keep it in sync for now
           final productRef = _firestoreService.db.collection('products').doc(sp.product.productId);
           transaction.update(productRef, {
             'stock': FieldValue.increment(-sp.quantity),
@@ -483,6 +506,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             child: ProductSelectionModal(
               initialSelected: _selectedProducts,
               actionLabel: 'Add to Cart',
+              storeId: _storeId,
             ),
           ),
         );

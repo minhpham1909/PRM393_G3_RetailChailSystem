@@ -2,88 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/services/excel_export_service.dart';
+import '../../../core/services/printing_service.dart';
+import '../../../core/models/stock_request_model.dart';
 import '../widgets/admin_app_bar.dart';
-
-class StockRequest {
-  final String requestId;
-  final String storeId;
-  final String managerId;
-  final String status;
-  final String priority;
-  final DateTime createdAt;
-  final DateTime? expectedDate;
-  final DateTime? approvedAt;
-  final String notes;
-  final List<Map<String, dynamic>> items;
-
-  StockRequest({
-    required this.requestId,
-    required this.storeId,
-    required this.managerId,
-    required this.status,
-    required this.priority,
-    required this.createdAt,
-    this.expectedDate,
-    this.approvedAt,
-    required this.notes,
-    required this.items,
-  });
-
-  factory StockRequest.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
-    DateTime? parseDate(dynamic value) {
-      if (value == null) return null;
-      if (value is Timestamp) return value.toDate();
-      if (value is String) return DateTime.tryParse(value);
-      return null;
-    }
-
-    List<Map<String, dynamic>> parseItems(Map<String, dynamic> data) {
-      final rawItems = data['items'];
-      if (rawItems is List) {
-        return rawItems
-            .whereType<Map>()
-            .map((m) => m.cast<String, dynamic>())
-            .toList();
-      }
-
-      // Backward compatibility: manager previously wrote `products` with `sku` key.
-      final rawProducts = data['products'];
-      if (rawProducts is List) {
-        return rawProducts
-            .whereType<Map>()
-            .map(
-              (m) {
-                final p = m.cast<String, dynamic>();
-                return {
-                  'product_id': p['product_id'],
-                  'product_name': p['product_name'],
-                  'product_sku': p['product_sku'] ?? p['sku'],
-                  'quantity': p['quantity'] ?? 0,
-                };
-              },
-            )
-            .toList();
-      }
-
-      return [];
-    }
-
-    return StockRequest(
-      requestId: doc.id,
-      storeId: (data['store_id'] ?? data['storeId'] ?? '').toString(),
-      managerId: (data['manager_id'] ?? data['managerId'] ?? '').toString(),
-      status: data['status'] ?? 'pending',
-      priority: data['priority'] ?? 'Normal',
-      createdAt: parseDate(data['created_at']) ?? DateTime.now(),
-      expectedDate: parseDate(data['expected_date']),
-      approvedAt: parseDate(data['approved_at']),
-      notes: (data['notes'] ?? '').toString(),
-      items: parseItems(data),
-    );
-  }
-}
 
 class ImportRequestManagementScreen extends StatefulWidget {
   const ImportRequestManagementScreen({super.key});
@@ -95,6 +17,8 @@ class ImportRequestManagementScreen extends StatefulWidget {
 
 class _ImportRequestManagementScreenState extends State<ImportRequestManagementScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final ExcelExportService _excelService = ExcelExportService();
+  final PrintingService _printingService = PrintingService();
   String _filterStatus = 'all';
 
   @override
@@ -219,7 +143,7 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
                                       style: const TextStyle(fontSize: 12),
                                     ),
                                     Text(
-                                      DateFormat('dd/MM/yyyy hh:mm')
+                                      DateFormat('dd/MM/yyyy HH:mm')
                                           .format(request.createdAt),
                                       style: const TextStyle(fontSize: 12),
                                     ),
@@ -354,12 +278,26 @@ class _ImportRequestManagementScreenState extends State<ImportRequestManagementS
                     ),
                   ],
                 ),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => _excelService.exportStockRequestToExcel(request: request),
+                      icon: const Icon(Icons.file_download, size: 18),
+                      label: const Text('Excel', style: TextStyle(fontSize: 12)),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _printingService.printStockRequestInvoice(request: request),
+                      icon: const Icon(Icons.print, size: 18),
+                      label: const Text('Invoice', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
                 const Divider(),
                 _buildDetailRow('ID:', request.requestId),
                 _buildDetailRow('Store:', request.storeId),
                 _buildDetailRow('Priority:', request.priority),
-                _buildDetailRow('Status:', request.status),
-                _buildDetailRow('Created at:', DateFormat('dd/MM/yyyy hh:mm').format(request.createdAt)),
+                _buildDetailRow('Status:', request.status.toUpperCase()),
+                _buildDetailRow('Created at:', DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt)),
                 _buildDetailRow('Notes:', request.notes),
                 const SizedBox(height: 16),
                 Text('Requested items (${request.items.length}):',

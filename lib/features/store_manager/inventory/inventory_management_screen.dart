@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/models/product_model.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/services/excel_export_service.dart';
 import '../../../core/constants/app_routes.dart';
 import '../widgets/manager_app_bar.dart';
 
@@ -16,12 +19,87 @@ class InventoryManagementScreen extends StatefulWidget {
 
 class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   final FirestoreService _firestoreService = FirestoreService();
+  final ExcelExportService _excelService = ExcelExportService();
 
   // Product list
   List<ProductModel> _products = [];
   List<ProductModel> _filteredProducts = [];
   int _pendingRequestsCount = 0;
   bool _isLoading = true;
+  bool _isExporting = false;
+  String _storeName = 'MyStore';
+  String _managerName = 'Store Manager';
+
+  Future<void> _exportToExcel() async {
+    if (_products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No data to export')),
+      );
+      return;
+    }
+
+    setState(() => _isExporting = true);
+    try {
+      final exportData = _products.map((product) => {
+        'sku': product.sku,
+        'name': product.name,
+        'category': product.category,
+        'stock': product.stock,
+        'price': product.price,
+      }).toList();
+
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final fileName = 'Inventory_${_storeName.replaceAll(' ', '_')}_$timestamp';
+
+      await _excelService.exportInventoryToExcel(
+        data: exportData,
+        fileName: fileName,
+        storeName: _storeName,
+        managerName: _managerName,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Inventory exported: $fileName.xlsx')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _loadStoreName() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user?.email == null) return;
+
+    try {
+      final userSnap = await _firestoreService.db
+          .collection('users')
+          .where('email', isEqualTo: user!.email)
+          .limit(1)
+          .get();
+      
+      if (userSnap.docs.isNotEmpty) {
+        final storeId = userSnap.docs.first.data()['store_id'];
+        if (storeId != null) {
+          final storeSnap = await _firestoreService.db.collection('stores').doc(storeId).get();
+          if (storeSnap.exists && mounted) {
+            setState(() {
+              _storeName = storeSnap.data()?['name'] ?? 'MyStore';
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading store name: $e');
+    }
+  }
 
   // Current filters
   String _activeFilter = 'All';
@@ -32,7 +110,10 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     super.initState();
     // Use addPostFrameCallback to avoid calling setState during initState
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadData();
+      if (mounted) {
+        _loadData();
+        _loadStoreName();
+      }
     });
   }
 
@@ -61,6 +142,30 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   /// Load products from Firestore.
   Future<void> _loadProducts() async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userSnap = await _firestoreService.db
+            .collection('users')
+            .where('email', isEqualTo: user.email)
+            .get();
+        if (userSnap.docs.isNotEmpty) {
+          final userData = userSnap.docs.first.data();
+          final storeId = userData['store_id'];
+          final fullName = userData['full_name'] ?? userData['email'];
+          if (storeId != null) {
+            final storeDoc = await _firestoreService.db.collection('stores').doc(storeId).get();
+            if (mounted) {
+              setState(() {
+                _managerName = fullName;
+                if (storeDoc.exists) {
+                  _storeName = storeDoc.data()?['name'] ?? 'MyStore';
+                }
+              });
+            }
+          }
+        }
+      }
+
       final snapshot = await _firestoreService.getCollection('products');
       final products = snapshot.docs
           .map((doc) => ProductModel.fromFirestore(doc))
@@ -135,8 +240,18 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         p.stockStatus == 'Low Stock' || p.stockStatus == 'Critical').length;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest,
-      appBar: const ManagerAppBar(),
+      backgroundColor: colorScheme.surface,
+      appBar: ManagerAppBar(
+        actions: [
+          IconButton(
+            onPressed: _isExporting ? null : _exportToExcel,
+            icon: _isExporting 
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : const Icon(Icons.download_rounded, color: Colors.black87),
+            tooltip: 'Export to Excel',
+          ),
+        ],
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadData,

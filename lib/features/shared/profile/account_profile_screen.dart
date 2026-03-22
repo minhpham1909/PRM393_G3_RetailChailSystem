@@ -48,6 +48,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
 
         if (userSnap.docs.isNotEmpty) {
           _userData = userSnap.docs.first.data();
+          _userData?['id'] = userSnap.docs.first.id;
 
           if (widget.showStoreInfo) {
             final storeId = _userData?['store_id'];
@@ -424,7 +425,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 _buildInfoRow(
                   Icons.account_circle_outlined,
                   'Account ID',
-                  _userData?['account_id'] ?? 'N/A',
+                  _userData?['account_id'] ?? _userData?['id'] ?? (_userData?['auth_method'] == 'google' ? 'GOOGLE_AUTH' : 'N/A'),
                 ),
                 _buildInfoRow(
                   Icons.email_outlined,
@@ -434,7 +435,7 @@ class _AccountProfileScreenState extends State<AccountProfileScreen> {
                 _buildInfoRow(
                   Icons.phone_outlined,
                   'Phone number',
-                  _userData?['phone'] ?? 'N/A',
+                  _userData?['phone_number'] ?? _userData?['phone'] ?? 'N/A',
                 ),
                 _buildInfoRow(
                   Icons.work_outline,
